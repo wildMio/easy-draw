@@ -1,0 +1,10 @@
+<canvas #canvas></canvas>
+
+<div class="tools-wrapper">
+  <button mat-button (click)="clear()">Clear</button>
+  <button mat-button (click)="changeMode()">Mode</button>
+  <button mat-button (click)="delete()">Delete Selection</button>
+  <button mat-button (click)="export()">export</button>
+  <input type="color" (input)="changeColor($event)" />
+  <input type="range" max="10" value="1" (input)="changeLineWidth($event)" />
+</div>
