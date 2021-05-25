@@ -1,0 +1,78 @@
+<div class="setting-wrapper">
+  <div class="basic-border pointer-events-all">
+    <div class="flex">
+      <button mat-button matTooltip="Load" (click)="export()">
+        <mat-icon>folder_open</mat-icon>
+      </button>
+      <button mat-button matTooltip="Save" (click)="export()">
+        <mat-icon>save</mat-icon>
+      </button>
+      <button mat-button matTooltip="Export" (click)="export()">
+        <mat-icon>save_alt</mat-icon>
+      </button>
+      <button mat-button matTooltip="Store at browser">
+        <mat-icon>archive</mat-icon>
+      </button>
+      <button mat-button matTooltip="Browser storage">
+        <mat-icon>storage</mat-icon>
+      </button>
+    </div>
+    <div class="flex">
+      <button mat-button matTooltip="Clear canvas" (click)="clear()">
+        <mat-icon>delete_forever</mat-icon>
+      </button>
+      <button mat-button matTooltip="Theme Mode">
+        <mat-icon>brightness_4</mat-icon>
+      </button>
+      <button mat-button matTooltip="Palette">
+        <mat-icon>palette</mat-icon>
+      </button>
+    </div>
+    <div class="flex background-color-picker-wrapper">
+      <app-color-picker
+        matTooltip="Canvas background color"
+        [colors]="canvasColors"
+        [color]="canvasColor$ | async"
+        (colorSelect)="changeCanvasColor($event)"
+      ></app-color-picker>
+    </div>
+  </div>
+  <div class="basic-border pointer-events-all brush-wrapper">
+    <app-brush-palette></app-brush-palette>
+    <button mat-button matTooltip="Delete Selection" (click)="delete()">
+      <mat-icon>delete</mat-icon>
+    </button>
+  </div>
+</div>
+<div class="mode-wrapper">
+  <mat-button-toggle-group
+    name="mode"
+    aria-label="Mode"
+    class="pointer-events-all"
+    [value]="mode$ | async"
+    (change)="changeMode($event)"
+  >
+    <mat-button-toggle value="selection" matTooltip="Selection">
+      <mat-icon>highlight_alt</mat-icon>
+    </mat-button-toggle>
+    <mat-button-toggle value="freeDraw" matTooltip="Draw">
+      <mat-icon>edit</mat-icon>
+    </mat-button-toggle>
+    <mat-button-toggle value="square" matTooltip="Square">
+      <mat-icon>crop_square</mat-icon>
+    </mat-button-toggle>
+    <mat-button-toggle value="diamond" matTooltip="Diamond">
+      <mat-icon svgIcon="diamond"></mat-icon>
+    </mat-button-toggle>
+    <mat-button-toggle value="ellipse" matTooltip="Ellipse">
+      <mat-icon>radio_button_unchecked</mat-icon>
+    </mat-button-toggle>
+    <mat-button-toggle value="line" matTooltip="Line">
+      <mat-icon>horizontal_rule</mat-icon>
+    </mat-button-toggle>
+    <mat-button-toggle value="text" matTooltip="Text">
+      <mat-icon>text_fields</mat-icon>
+    </mat-button-toggle>
+  </mat-button-toggle-group>
+</div>
+<div></div>

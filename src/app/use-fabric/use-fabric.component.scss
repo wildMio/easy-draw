@@ -5,10 +5,5 @@ canvas {
 }
 
 .tools-wrapper {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  display: flex;
-  flex-wrap: wrap;
-  transform: translateX(-50%);
+  top: 0.25rem;
 }

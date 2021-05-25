@@ -1,1 +1,8 @@
 <router-outlet></router-outlet>
+
+<div
+  *ngIf="loadModuleIndicator$ | async"
+  class="load-module-indicator-wrapper position-absolute width-100"
+>
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+</div>

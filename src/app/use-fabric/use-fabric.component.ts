@@ -2,97 +2,62 @@ import { DOCUMENT } from '@angular/common';
 import {
   Component,
   ChangeDetectionStrategy,
-  AfterViewInit,
   ElementRef,
+  HostBinding,
+  OnDestroy,
   Inject,
-  NgZone,
-  Renderer2,
-  VERSION,
-  ViewChild,
 } from '@angular/core';
-import { fromEvent } from 'rxjs';
-import { debounceTime, map, startWith } from 'rxjs/operators';
 
 import { fabric } from 'fabric';
+import { fromEvent, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { FabricActionService } from './fabric-action.service';
+import { FabricStateService } from './fabric-state.service';
 
 @Component({
   selector: 'app-use-fabric',
   templateUrl: './use-fabric.component.html',
   styleUrls: ['./use-fabric.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // providers: [FabricStateService],
 })
-export class UseFabricComponent implements AfterViewInit {
-  @ViewChild('canvas') canvas!: ElementRef<HTMLCanvasElement>;
-
-  name = 'Angular ' + VERSION.major;
+export class UseFabricComponent implements OnDestroy {
+  @HostBinding('class') class = 'block height-100';
 
   fabricCanvas!: fabric.Canvas;
 
+  hostEl = this.host.nativeElement;
+
+  destroy$ = new Subject();
+
   constructor(
     @Inject(DOCUMENT) private readonly document: Document,
-    private readonly renderer: Renderer2,
-    private readonly zone: NgZone
+    private readonly host: ElementRef<HTMLElement>,
+    private readonly fabricStateService: FabricStateService,
+    private readonly fabricActionService: FabricActionService
   ) {}
 
-  ngAfterViewInit(): void {
-    const canvasEl = this.canvas.nativeElement;
-
-    this.fabricCanvas = new fabric.Canvas(canvasEl, {
-      isDrawingMode: true,
-    });
-
-    this.zone.runOutsideAngular(() => {
-      fromEvent(window, 'resize')
-        .pipe(
-          debounceTime(60),
-          map((e) => {
-            const { innerWidth: width, innerHeight: height } =
-              e.target as Window;
-            return { width, height };
-          }),
-          startWith({ width: window.innerWidth, height: window.innerHeight })
-        )
-        .subscribe({
-          next: ({ width, height }) => {
-            this.zone.run(() => {
-              this.renderer.setAttribute(canvasEl, 'width', String(width));
-              this.renderer.setAttribute(canvasEl, 'height', String(height));
-
-              this.fabricCanvas.setWidth(width);
-              this.fabricCanvas.setHeight(height);
-            });
-          },
-        });
-    });
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  clear() {
-    this.fabricCanvas.clear();
+  fabricCanvasReady(fabricCanvas: fabric.Canvas) {
+    this.fabricCanvas = fabricCanvas;
+    this.fabricStateService.updateFabricCanvas(this.fabricCanvas);
+
+    this.registerGlobalKeyboardEvent();
   }
 
-  changeMode() {
-    this.fabricCanvas.isDrawingMode = !this.fabricCanvas.isDrawingMode;
-  }
-
-  delete() {
-    this.fabricCanvas.remove(this.fabricCanvas.getActiveObject());
-
-    console.log(this.fabricCanvas.getSelectionContext());
-    console.log(this.fabricCanvas.getSelectionElement());
-  }
-
-  changeColor(e: Event) {
-    console.log(e);
-    const brush = this.fabricCanvas.freeDrawingBrush;
-    brush.color = (e.target as HTMLInputElement).value;
-  }
-
-  changeLineWidth(e: Event) {
-    const target = e.target as HTMLInputElement;
-    this.fabricCanvas.freeDrawingBrush.width = parseInt(target.value, 10) || 1;
-  }
-
-  export() {
-    console.log(this.fabricCanvas.toJSON());
+  registerGlobalKeyboardEvent() {
+    fromEvent<KeyboardEvent>(this.document, 'keydown')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (keydown) => {
+          if (keydown.key === 'Delete') {
+            this.fabricActionService.deleteSelection();
+          }
+        },
+      });
   }
 }

@@ -1,0 +1,39 @@
+<span>Stroke</span>
+<app-color-picker
+  [color]="color$ | async"
+  (colorSelect)="changeColor($event)"
+></app-color-picker>
+<span>Stroke Width</span>
+<div class="stoke-width-wrapper flex items-center">
+  <mat-slider
+    thumbLabel
+    color="primary"
+    min="1"
+    max="20"
+    aria-label="line width units"
+    [value]="lineWidth$ | async"
+    (change)="changeLineWidth($event)"
+  ></mat-slider>
+
+  <label class="input-wrapper flex items-center">
+    <span
+      matPrefix
+      class="width-indicator-wrapper height-100 flex-center overflow-hidden"
+    >
+      <div
+        class="width-indicator"
+        [style.--lineWidth]="lineWidth$ | async"
+        [style.border-color]="color$ | async"
+      ></div>
+    </span>
+    <input
+      #lineWidthInput
+      type="text"
+      class="line-width-input height-100"
+      min="1"
+      max="20"
+      [value]="lineWidth$ | async"
+      (input)="inputLineWidth(lineWidthInput.value)"
+    />
+  </label>
+</div>

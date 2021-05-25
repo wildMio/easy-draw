@@ -1,0 +1,43 @@
+<button
+  class="color-picker-button pointer overflow-hidden"
+  type="button"
+  (click)="toggleOverlay()"
+  cdkOverlayOrigin
+  #trigger="cdkOverlayOrigin"
+>
+  <div class="height-100" matRipple [style.background-color]="color"></div>
+</button>
+
+<label class="input-wrapper flex items-center">
+  <span matPrefix class="tag-icon-wrapper height-100 flex-center">
+    <mat-icon class="tag-icon">tag</mat-icon>
+  </span>
+  <input
+    type="text"
+    class="color-input height-100"
+    [value]="colorInput$ | async"
+  />
+</label>
+
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="trigger"
+  [cdkConnectedOverlayOpen]="isOpen"
+  (overlayOutsideClick)="closeOverlay($event, trigger)"
+  (detach)="overlayDetach()"
+>
+  <div
+    class="color-picker-panel mat-elevation-z2"
+    cdkTrapFocus
+    cdkTrapFocusAutoCapture
+    (keydown)="interceptKeydown($event)"
+  >
+    <button
+      *ngFor="let color of colors"
+      class="color-picker-button pointer overflow-hidden"
+      (click)="colorSelect.emit(color)"
+    >
+      <div class="height-100" matRipple [style.background-color]="color"></div>
+    </button>
+  </div>
+</ng-template>

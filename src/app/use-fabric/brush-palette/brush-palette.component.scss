@@ -1,0 +1,35 @@
+.width-indicator {
+  --lineWidth: 1;
+  border: 1px solid;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  transform: scale(calc(var(--lineWidth) / 2));
+}
+
+.input-wrapper {
+  margin-left: 0.25rem;
+  height: 30px;
+  border-radius: 4px;
+  &:focus-within {
+    box-shadow: 0 0 0px 1px #a5d8ff;
+  }
+}
+
+.width-indicator-wrapper {
+  width: 30px;
+  background: #dee2e6;
+  color: #495057;
+  border-radius: 4px 0 0 4px;
+}
+
+.line-width-input {
+  box-sizing: border-box;
+  width: 4ch;
+  font-size: 1rem;
+  color: #343a40;
+  border: 1px solid #dee2e6;
+  outline: none;
+  padding-inline-start: 0.5em;
+  appearance: none;
+  border-radius: 0 4px 4px 0;
+}
