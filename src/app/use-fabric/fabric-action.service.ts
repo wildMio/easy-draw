@@ -12,7 +12,7 @@ export class FabricActionService {
 
   brushColor$ = new BehaviorSubject('#000000');
 
-  lineWidth$ = new BehaviorSubject(1);
+  lineWidth$ = new BehaviorSubject(8);
 
   mode$ = new BehaviorSubject<ModeType>('selection');
 

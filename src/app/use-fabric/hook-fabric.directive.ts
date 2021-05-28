@@ -10,7 +10,7 @@ import {
   Renderer2,
 } from '@angular/core';
 import { fabric } from 'fabric';
-import { NEVER, Subject } from 'rxjs';
+import { combineLatest, NEVER, Subject } from 'rxjs';
 import {
   debounceTime,
   finalize,
@@ -22,6 +22,7 @@ import {
   tap,
 } from 'rxjs/operators';
 import { whenResize } from '../utils/resize-observer';
+import { FabricActionService } from './fabric-action.service';
 import { FabricStateService, ModeType } from './fabric-state.service';
 
 @Directive({
@@ -44,17 +45,22 @@ export class HookFabricDirective implements OnInit, OnDestroy {
 
   @Output() fabricCanvasReady = new EventEmitter<fabric.Canvas>();
 
+  private drawingObject: fabric.Object | null = null;
+
   constructor(
     private readonly host: ElementRef<HTMLCanvasElement>,
     private readonly zone: NgZone,
     private readonly renderer: Renderer2,
-    private readonly fabricStateService: FabricStateService
+    private readonly fabricStateService: FabricStateService,
+    private readonly fabricActionService: FabricActionService
   ) {}
 
   ngOnInit(): void {
     const canvasEl = this.host.nativeElement;
 
-    this.fabricCanvas = new fabric.Canvas(canvasEl);
+    this.fabricCanvas = new fabric.Canvas(canvasEl, {
+      enableRetinaScaling: true,
+    } as fabric.ICanvasOptions);
 
     this.zone.runOutsideAngular(() => {
       whenResize(this.parentElement)
@@ -104,9 +110,11 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       freeDraw: true,
     };
 
-    this.fabricStateService.mode$
+    const { mode$, lineWidth$, brushColor$ } = this.fabricActionService;
+
+    combineLatest([mode$, lineWidth$, brushColor$])
       .pipe(
-        switchMap((mode) => {
+        switchMap(([mode, strokeWidth, brushColor]) => {
           if (notShapeMode[mode]) {
             return NEVER;
           }
@@ -132,11 +140,20 @@ export class HookFabricDirective implements OnInit, OnDestroy {
                 return NEVER;
               }
               const mousemoveHandler = this.generateMousemoveEventHandler(
+                pointer,
                 mode,
-                pointer
+                strokeWidth,
+                brushColor
               );
               return this.mousemoveEvent$.pipe(
                 tap((mousemove) => mousemoveHandler(mousemove)),
+                finalize(() => {
+                  if (this.drawingObject) {
+                    this.fabricCanvas.remove(this.drawingObject);
+                    this.fabricCanvas.add(this.drawingObject);
+                    this.drawingObject = null;
+                  }
+                }),
                 takeUntil(this.mouseupEvent$)
               );
             })
@@ -150,17 +167,29 @@ export class HookFabricDirective implements OnInit, OnDestroy {
   }
 
   generateMousemoveEventHandler(
+    pointer: fabric.Point,
     mode: ModeType,
-    pointer: fabric.Point
+    strokeWidth: number,
+    stroke: string
   ): (e: fabric.IEvent) => void {
-    const { Rect, Ellipse, Line } = fabric;
+    const { Rect, Ellipse, Line, Polygon, Point } = fabric;
     const { x: originalX, y: originalY } = pointer;
+
+    let isFirst = true;
+
+    const addObject = (obj: fabric.Object) => {
+      this.drawingObject = obj;
+      isFirst = false;
+      this.fabricCanvas.add(obj);
+    };
+
     switch (mode) {
       case 'square': {
         const rect = new Rect({
           fill: 'transparent',
-          stroke: '#000',
-          strokeWidth: 1,
+          stroke,
+          strokeWidth,
+          strokeLineJoin: 'round',
           strokeUniform: true,
         });
         return ({ pointer }) => {
@@ -176,15 +205,16 @@ export class HookFabricDirective implements OnInit, OnDestroy {
 
           rect.setOptions({ top, left, width, height });
 
-          this.fabricCanvas.remove(rect);
-          this.fabricCanvas.add(rect);
+          isFirst && addObject(rect);
+
+          this.fabricCanvas.requestRenderAll();
         };
       }
       case 'ellipse': {
         const ellipse = new Ellipse({
           fill: 'transparent',
-          stroke: '#000',
-          strokeWidth: 1,
+          stroke,
+          strokeWidth,
           strokeUniform: true,
         });
         return ({ pointer }) => {
@@ -200,16 +230,19 @@ export class HookFabricDirective implements OnInit, OnDestroy {
 
           ellipse.setOptions({ top, left, rx, ry });
 
-          this.fabricCanvas.remove(ellipse);
-          this.fabricCanvas.add(ellipse);
+          isFirst && addObject(ellipse);
+
+          this.fabricCanvas.requestRenderAll();
         };
       }
       case 'line': {
         const line = new Line([], {
           fill: 'transparent',
-          stroke: '#000',
-          strokeWidth: 1,
+          stroke,
+          strokeWidth,
           strokeUniform: true,
+          strokeLineCap: 'round',
+          strokeLineJoin: 'round',
         });
         return ({ pointer }) => {
           if (!pointer) {
@@ -224,8 +257,53 @@ export class HookFabricDirective implements OnInit, OnDestroy {
 
           line.setOptions({ x1, y1, x2, y2 });
 
-          this.fabricCanvas.remove(line);
-          this.fabricCanvas.add(line);
+          isFirst && addObject(line);
+
+          this.fabricCanvas.requestRenderAll();
+        };
+      }
+      case 'diamond': {
+        const diamond = new Polygon(
+          [
+            { x: 0, y: 0 },
+            { x: 0, y: 0 },
+            { x: 0, y: 0 },
+            { x: 0, y: 0 },
+          ],
+          {
+            fill: 'transparent',
+            stroke,
+            strokeWidth,
+            strokeUniform: true,
+            strokeLineJoin: 'round',
+          }
+        );
+
+        return ({ pointer }) => {
+          if (!pointer) {
+            return;
+          }
+
+          const { x, y } = pointer;
+          const top = Math.min(originalY, y);
+          const left = Math.min(originalX, x);
+          const width = Math.abs(originalX - x);
+          const height = Math.abs(originalY - y);
+
+          diamond.setOptions({ top, left, width, height });
+
+          diamond.points![0].x = 0;
+          diamond.points![0].y = -height / 2;
+          diamond.points![1].x = width / 2;
+          diamond.points![1].y = 0;
+          diamond.points![2].x = 0;
+          diamond.points![2].y = height / 2;
+          diamond.points![3].x = -width / 2;
+          diamond.points![3].y = 0;
+
+          isFirst && addObject(diamond);
+
+          this.fabricCanvas.requestRenderAll();
         };
       }
       default:

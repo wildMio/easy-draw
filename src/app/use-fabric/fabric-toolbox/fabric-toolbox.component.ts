@@ -19,7 +19,7 @@ import { FabricStateService, ModeType } from '../fabric-state.service';
 export class FabricToolboxComponent {
   @Input() fabricCanvas!: fabric.Canvas;
 
-  mode$ = this.fabricStateService.mode$;
+  mode$ = this.fabricActionService.mode$;
 
   hostEl = this.host.nativeElement;
 
