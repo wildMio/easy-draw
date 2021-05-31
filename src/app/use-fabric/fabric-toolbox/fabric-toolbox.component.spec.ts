@@ -8,9 +8,8 @@ describe('FabricToolboxComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ FabricToolboxComponent ]
-    })
-    .compileComponents();
+      declarations: [FabricToolboxComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

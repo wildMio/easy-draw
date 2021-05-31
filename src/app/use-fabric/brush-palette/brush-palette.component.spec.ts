@@ -8,9 +8,8 @@ describe('BrushPaletteComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ BrushPaletteComponent ]
-    })
-    .compileComponents();
+      declarations: [BrushPaletteComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {
