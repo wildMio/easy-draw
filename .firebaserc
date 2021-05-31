@@ -1,0 +1,11 @@
+{
+  "targets": {
+    "easy-draw-a56ec": {
+      "hosting": {
+        "easy-draw": [
+          "easy-draw-a56ec"
+        ]
+      }
+    }
+  }
+}
