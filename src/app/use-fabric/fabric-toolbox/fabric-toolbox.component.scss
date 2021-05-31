@@ -1,11 +1,38 @@
 :host {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
+  grid-template-rows: auto;
+  grid-template-areas: "setting mode hint";
   gap: 0.25rem;
 }
 
+:host.narrow-toolbox {
+  grid-template-columns: auto;
+  grid-template-rows: 0 auto 1fr;
+  grid-template-areas:
+    "hint"
+    "mode"
+    "setting";
+  height: 100%;
+  gap: 0;
+
+  .setting-wrapper {
+    justify-self: stretch;
+    align-self: end;
+  }
+  .mode-wrapper {
+    justify-self: center;
+    transform: scale(0.75);
+    transform-origin: top center;
+  }
+}
+
+.grid-area-var {
+  grid-area: var(--grid-area);
+}
+
 .setting-wrapper {
-  justify-self: flex-start;
+  justify-self: start;
 }
 
 .basic-border {
@@ -17,4 +44,13 @@
 .brush-wrapper,
 .background-color-picker-wrapper {
   padding: 0.5rem;
+}
+
+.narrow-tools-wrapper {
+  padding: 0.5rem;
+}
+
+.same-ratio-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
 }

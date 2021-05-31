@@ -15,6 +15,7 @@ import { HookFabricDirective } from './hook-fabric.directive';
 import { FabricToolboxComponent } from './fabric-toolbox/fabric-toolbox.component';
 import { BrushPaletteComponent } from './brush-palette/brush-palette.component';
 import { ColorPickerModule } from '../component/color-picker/color-picker.module';
+import { LayoutModule } from '@angular/cdk/layout';
 
 @NgModule({
   declarations: [
@@ -33,6 +34,7 @@ import { ColorPickerModule } from '../component/color-picker/color-picker.module
     MatTooltipModule,
     MatCardModule,
     ColorPickerModule,
+    LayoutModule,
   ],
 })
 export class UseFabricModule {}

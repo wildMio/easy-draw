@@ -10,12 +10,12 @@ import {
   Renderer2,
 } from '@angular/core';
 import { fabric } from 'fabric';
-import { combineLatest, NEVER, Subject } from 'rxjs';
+import { combineLatest, merge, NEVER, Subject } from 'rxjs';
 import {
   debounceTime,
   finalize,
   map,
-  skip,
+  mapTo,
   startWith,
   switchMap,
   takeUntil,
@@ -24,6 +24,25 @@ import {
 import { whenResize } from '../utils/resize-observer';
 import { FabricActionService } from './fabric-action.service';
 import { FabricStateService, ModeType } from './fabric-state.service';
+
+interface SelectionCreatedEvent {
+  e: MouseEvent;
+  selected: fabric.Object[];
+  target: fabric.Object;
+}
+
+interface SelectionUpdatedEvent {
+  e: MouseEvent;
+  selected: fabric.Object[];
+  deselected: fabric.Object[];
+  updated: fabric.Object;
+  target: fabric.Object;
+}
+
+interface SelectionClearedEvent {
+  e: MouseEvent;
+  deselected: fabric.Object[];
+}
 
 @Directive({
   selector: '[appHookFabric]',
@@ -38,6 +57,17 @@ export class HookFabricDirective implements OnInit, OnDestroy {
   mousedownHandler = (e: fabric.IEvent) => this.mousedownEvent$.next(e);
   mousemoveHandler = (e: fabric.IEvent) => this.mousemoveEvent$.next(e);
   mouseupHandler = (e: fabric.IEvent) => this.mouseupEvent$.next(e);
+
+  selectionCreated$ = new Subject<SelectionCreatedEvent>();
+  selectionUpdated$ = new Subject<SelectionUpdatedEvent>();
+  selectionCleared$ = new Subject<SelectionClearedEvent>();
+
+  selectionCreatedHandler = (e: fabric.IEvent) =>
+    this.selectionCreated$.next(e as SelectionCreatedEvent);
+  selectionUpdatedHandler = (e: fabric.IEvent) =>
+    this.selectionUpdated$.next(e as SelectionUpdatedEvent);
+  selectionClearedHandler = (e: fabric.IEvent) =>
+    this.selectionCleared$.next(e as SelectionClearedEvent);
 
   destroy$ = new Subject();
 
@@ -88,8 +118,13 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       this.fabricCanvas.on('mouse:down', this.mousedownHandler);
       this.fabricCanvas.on('mouse:move', this.mousemoveHandler);
       this.fabricCanvas.on('mouse:up', this.mouseupHandler);
+      this.fabricCanvas.on('selection:created', this.selectionCreatedHandler);
+      this.fabricCanvas.on('selection:updated', this.selectionUpdatedHandler);
+      this.fabricCanvas.on('selection:cleared', this.selectionClearedHandler);
 
       this.registerMouseDrawShape();
+
+      this.registerSelectedChange();
     });
 
     this.fabricCanvasReady.emit(this.fabricCanvas);
@@ -102,6 +137,9 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     this.fabricCanvas.off('mouse:down', this.mousedownHandler);
     this.fabricCanvas.off('mouse:move', this.mousemoveHandler);
     this.fabricCanvas.off('mouse:up', this.mouseupHandler);
+    this.fabricCanvas.off('selection:created', this.selectionCreatedHandler);
+    this.fabricCanvas.off('selection:updated', this.selectionUpdatedHandler);
+    this.fabricCanvas.off('selection:cleared', this.selectionClearedHandler);
   }
 
   registerMouseDrawShape() {
@@ -183,9 +221,18 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       this.fabricCanvas.add(obj);
     };
 
+    const baseConfig = {
+      padding: strokeWidth,
+      borderColor: 'black',
+      borderDashArray: [8, 4],
+      cornerStrokeColor: 'black',
+      borderOpacityWhenMoving: 1,
+    };
+
     switch (mode) {
       case 'square': {
         const rect = new Rect({
+          ...baseConfig,
           fill: 'transparent',
           stroke,
           strokeWidth,
@@ -212,6 +259,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       }
       case 'ellipse': {
         const ellipse = new Ellipse({
+          ...baseConfig,
           fill: 'transparent',
           stroke,
           strokeWidth,
@@ -237,6 +285,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       }
       case 'line': {
         const line = new Line([], {
+          ...baseConfig,
           fill: 'transparent',
           stroke,
           strokeWidth,
@@ -271,6 +320,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
             { x: 0, y: 0 },
           ],
           {
+            ...baseConfig,
             fill: 'transparent',
             stroke,
             strokeWidth,
@@ -323,18 +373,75 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     if (currentTextBox && !currentTextBox.text?.length) {
       this.fabricCanvas.remove(currentTextBox);
     }
+
+    const baseConfig = {
+      padding: 8,
+      borderColor: 'black',
+      borderDashArray: [8, 4],
+      cornerStrokeColor: 'black',
+      borderOpacityWhenMoving: 1,
+    };
+
     const { Textbox } = fabric;
     const { x: left, y: top } = pointer;
     currentTextBox = new Textbox('', {
+      ...baseConfig,
       left,
       top,
       fontSize: 20,
       editable: true,
       strokeUniform: true,
+      cursorWidth: 1,
     });
 
     this.fabricCanvas.add(currentTextBox);
     currentTextBox.enterEditing();
     return currentTextBox;
+  }
+
+  registerSelectedChange() {
+    const adjustSelectionStyle = (target: fabric.Object, padding: number) => {
+      target.cornerStrokeColor = 'black';
+      target.borderColor = 'black';
+      target.borderDashArray = [8, 4];
+      target.padding = padding;
+      target.borderOpacityWhenMoving = 1;
+    };
+
+    const created$ = this.selectionCreated$.pipe(
+      tap(({ target, selected }) => {
+        let padding = 0;
+        selected.forEach(
+          (obj) => (padding = Math.max(padding, obj.strokeWidth ?? 0))
+        );
+
+        adjustSelectionStyle(target, padding);
+      })
+    );
+
+    const updated$ = this.selectionUpdated$.pipe(
+      tap(({ target, selected }) => {
+        let padding = 0;
+        selected.forEach(
+          (obj) => (padding = Math.max(padding, obj.strokeWidth ?? 0))
+        );
+        adjustSelectionStyle(target, padding);
+      })
+    );
+
+    const cleared$ = this.selectionCleared$.pipe(
+      mapTo({ selected: [] as fabric.Object[] })
+    );
+
+    merge(created$, updated$, cleared$)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({ selected }) => {
+          console.log(this.fabricCanvas.toJSON());
+          selected.forEach((obj) => console.log(obj.toJSON()));
+          this.fabricCanvas.loadFromJSON;
+          this.fabricActionService.updateSelectedObjects(selected);
+        },
+      });
   }
 }

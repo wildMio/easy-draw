@@ -1,50 +1,114 @@
-<div class="setting-wrapper">
-  <div class="basic-border pointer-events-all">
-    <div class="flex">
-      <button mat-button matTooltip="Load" (click)="export()">
-        <mat-icon>folder_open</mat-icon>
-      </button>
-      <button mat-button matTooltip="Save" (click)="export()">
-        <mat-icon>save</mat-icon>
-      </button>
-      <button mat-button matTooltip="Export" (click)="export()">
-        <mat-icon>save_alt</mat-icon>
-      </button>
-      <button mat-button matTooltip="Store at browser">
-        <mat-icon>archive</mat-icon>
-      </button>
-      <button mat-button matTooltip="Browser storage">
-        <mat-icon>storage</mat-icon>
+<div class="setting-wrapper grid-area-var" style="--grid-area: setting">
+  <ng-container *ngIf="narrowScreen$ | async; else wideScreenSetting">
+    <div class="basic-border pointer-events-all">
+      <div *ngIf="showNarrowScreenTools$ | async" class="narrow-tools-wrapper">
+        <button
+          mat-stroked-button
+          matTooltip="Clear canvas"
+          class="width-100"
+          (click)="clear()"
+        >
+          <mat-icon>delete_forever</mat-icon>
+          Reset the canvas
+        </button>
+
+        <button mat-button matTooltip="Theme Mode" (click)="toggleTheme()">
+          <mat-icon>brightness_4</mat-icon>
+        </button>
+      </div>
+      <div
+        *ngIf="showNarrowPalette$ | async"
+        class="narrow-tools-wrapper flex justify-center"
+      >
+        <app-brush-palette></app-brush-palette>
+      </div>
+      <div class="same-ratio-grid">
+        <div>
+          <button
+            mat-button
+            matTooltip="Toggle tool panel"
+            (click)="toggleNarrowScreenTools()"
+          >
+            <mat-icon>home_repair_service</mat-icon>
+          </button>
+          <button
+            mat-button
+            matTooltip="Toggle palette"
+            (click)="toggleNarrowPalette()"
+          >
+            <mat-icon>palette</mat-icon>
+          </button>
+        </div>
+        <div class="justify-self-center">
+          <button mat-button matTooltip="Undo">
+            <mat-icon>undo</mat-icon>
+          </button>
+          <button mat-button matTooltip="Redo">
+            <mat-icon>redo</mat-icon>
+          </button>
+        </div>
+        <div class="justify-self-end">
+          <button
+            *ngIf="hasSelected$ | async"
+            mat-button
+            matTooltip="Delete Selection"
+            (click)="delete()"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #wideScreenSetting>
+    <div class="basic-border pointer-events-all">
+      <div class="flex">
+        <button mat-button matTooltip="Load" (click)="export()">
+          <mat-icon>folder_open</mat-icon>
+        </button>
+        <button mat-button matTooltip="Save" (click)="export()">
+          <mat-icon>save</mat-icon>
+        </button>
+        <button mat-button matTooltip="Export" (click)="export()">
+          <mat-icon>save_alt</mat-icon>
+        </button>
+        <button mat-button matTooltip="Store at browser">
+          <mat-icon>archive</mat-icon>
+        </button>
+        <button mat-button matTooltip="Browser storage">
+          <mat-icon>storage</mat-icon>
+        </button>
+      </div>
+      <div class="flex">
+        <button mat-button matTooltip="Clear canvas" (click)="clear()">
+          <mat-icon>delete_forever</mat-icon>
+        </button>
+        <button mat-button matTooltip="Theme Mode" (click)="toggleTheme()">
+          <mat-icon>brightness_4</mat-icon>
+        </button>
+        <button mat-button matTooltip="Palette">
+          <mat-icon>palette</mat-icon>
+        </button>
+      </div>
+      <div class="flex background-color-picker-wrapper">
+        <app-color-picker
+          matTooltip="Canvas background color"
+          [colors]="canvasColors"
+          [color]="canvasColor$ | async"
+          (colorSelect)="changeCanvasColor($event)"
+        ></app-color-picker>
+      </div>
+    </div>
+    <div class="basic-border pointer-events-all brush-wrapper">
+      <app-brush-palette></app-brush-palette>
+      <button mat-button matTooltip="Delete Selection" (click)="delete()">
+        <mat-icon>delete</mat-icon>
       </button>
     </div>
-    <div class="flex">
-      <button mat-button matTooltip="Clear canvas" (click)="clear()">
-        <mat-icon>delete_forever</mat-icon>
-      </button>
-      <button mat-button matTooltip="Theme Mode">
-        <mat-icon>brightness_4</mat-icon>
-      </button>
-      <button mat-button matTooltip="Palette">
-        <mat-icon>palette</mat-icon>
-      </button>
-    </div>
-    <div class="flex background-color-picker-wrapper">
-      <app-color-picker
-        matTooltip="Canvas background color"
-        [colors]="canvasColors"
-        [color]="canvasColor$ | async"
-        (colorSelect)="changeCanvasColor($event)"
-      ></app-color-picker>
-    </div>
-  </div>
-  <div class="basic-border pointer-events-all brush-wrapper">
-    <app-brush-palette></app-brush-palette>
-    <button mat-button matTooltip="Delete Selection" (click)="delete()">
-      <mat-icon>delete</mat-icon>
-    </button>
-  </div>
+  </ng-template>
 </div>
-<div class="mode-wrapper">
+<div class="mode-wrapper grid-area-var" style="--grid-area: mode">
   <mat-button-toggle-group
     name="mode"
     aria-label="Mode"
@@ -75,4 +139,4 @@
     </mat-button-toggle>
   </mat-button-toggle-group>
 </div>
-<div></div>
+<div class="grid-area-var" style="--grid-area: hint"></div>

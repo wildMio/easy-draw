@@ -41,6 +41,7 @@ body {
   height: 100%;
 }
 body {
+  overflow: hidden;
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
@@ -71,6 +72,10 @@ body {
   justify-content: center;
 }
 
+.justify-between {
+  justify-content: space-between;
+}
+
 .items-center {
   align-items: center;
 }
@@ -81,6 +86,18 @@ body {
 
 .flex-new-line {
   flex: 0 0 100%;
+}
+
+.grid {
+  display: grid;
+}
+
+.justify-self-center {
+  justify-self: center;
+}
+
+.justify-self-end {
+  justify-self: end;
 }
 
 .gat-1 {
@@ -105,4 +122,9 @@ body {
 
 .overflow-hidden {
   overflow: hidden;
+}
+
+.dark-theme {
+  filter: invert(100%) hue-rotate(180deg);
+  background-color: black;
 }

@@ -16,6 +16,8 @@ export class FabricActionService {
 
   mode$ = new BehaviorSubject<ModeType>('selection');
 
+  selectedObjects$ = new BehaviorSubject<fabric.Object[]>([]);
+
   constructor() {}
 
   deleteSelection() {
@@ -36,5 +38,9 @@ export class FabricActionService {
 
   changeMode(mode: ModeType) {
     this.mode$.next(mode);
+  }
+
+  updateSelectedObjects(selected: fabric.Object[]) {
+    this.selectedObjects$.next(selected);
   }
 }
