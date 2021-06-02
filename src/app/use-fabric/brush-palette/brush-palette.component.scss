@@ -1,9 +1,11 @@
 .width-indicator {
   --lineWidth: 1;
   border: 1px solid;
+  width: 2px;
+  height: 2px;
   border-radius: 50%;
   transition: transform 0.2s;
-  transform: scale(calc(var(--lineWidth) / 2));
+  transform: scale(calc(var(--lineWidth) / 4));
 }
 
 .input-wrapper {
