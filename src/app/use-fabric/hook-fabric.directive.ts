@@ -12,12 +12,14 @@ import {
 import { fabric } from 'fabric';
 import { combineLatest, merge, NEVER, Subject } from 'rxjs';
 import {
+  auditTime,
   debounceTime,
   finalize,
   map,
   mapTo,
   startWith,
   switchMap,
+  switchMapTo,
   takeUntil,
   tap,
 } from 'rxjs/operators';
@@ -44,6 +46,10 @@ interface SelectionClearedEvent {
   deselected: fabric.Object[];
 }
 
+interface PathCreatedEvent {
+  path: fabric.Path;
+}
+
 @Directive({
   selector: '[appHookFabric]',
 })
@@ -68,6 +74,11 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     this.selectionUpdated$.next(e as SelectionUpdatedEvent);
   selectionClearedHandler = (e: fabric.IEvent) =>
     this.selectionCleared$.next(e as SelectionClearedEvent);
+
+  pathCreated$ = new Subject<PathCreatedEvent>();
+
+  pathCreatedHandler = (e: fabric.IEvent) =>
+    this.pathCreated$.next(e as any as PathCreatedEvent);
 
   destroy$ = new Subject();
 
@@ -121,10 +132,13 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       this.fabricCanvas.on('selection:created', this.selectionCreatedHandler);
       this.fabricCanvas.on('selection:updated', this.selectionUpdatedHandler);
       this.fabricCanvas.on('selection:cleared', this.selectionClearedHandler);
+      this.fabricCanvas.on('path:created', this.pathCreatedHandler);
 
       this.registerMouseDrawShape();
 
       this.registerSelectedChange();
+
+      this.registerPathCreated();
     });
 
     this.fabricCanvasReady.emit(this.fabricCanvas);
@@ -140,6 +154,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     this.fabricCanvas.off('selection:created', this.selectionCreatedHandler);
     this.fabricCanvas.off('selection:updated', this.selectionUpdatedHandler);
     this.fabricCanvas.off('selection:cleared', this.selectionClearedHandler);
+    this.fabricCanvas.off('path:created', this.pathCreatedHandler);
   }
 
   registerMouseDrawShape() {
@@ -148,11 +163,13 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       freeDraw: true,
     };
 
-    const { mode$, lineWidth$, brushColor$ } = this.fabricActionService;
+    const { mode$, lineWidth$, brushColor$, opacity$ } =
+      this.fabricActionService;
 
-    combineLatest([mode$, lineWidth$, brushColor$])
+    combineLatest([mode$, lineWidth$, brushColor$, opacity$])
       .pipe(
-        switchMap(([mode, strokeWidth, brushColor]) => {
+        auditTime(0),
+        switchMap(([mode, strokeWidth, brushColor, opacity]) => {
           if (notShapeMode[mode]) {
             return NEVER;
           }
@@ -161,7 +178,11 @@ export class HookFabricDirective implements OnInit, OnDestroy {
             let currentTextBox: fabric.Textbox | undefined;
             return this.mousedownEvent$.pipe(
               tap(({ pointer }) => {
-                currentTextBox = this.handleTextMode(pointer, currentTextBox);
+                currentTextBox = this.handleTextMode(
+                  pointer,
+                  currentTextBox,
+                  opacity
+                );
               }),
               finalize(() => {
                 currentTextBox?.exitEditing();
@@ -181,7 +202,8 @@ export class HookFabricDirective implements OnInit, OnDestroy {
                 pointer,
                 mode,
                 strokeWidth,
-                brushColor
+                brushColor,
+                opacity
               );
               return this.mousemoveEvent$.pipe(
                 tap((mousemove) => mousemoveHandler(mousemove)),
@@ -208,7 +230,8 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     pointer: fabric.Point,
     mode: ModeType,
     strokeWidth: number,
-    stroke: string
+    stroke: string,
+    opacity: number
   ): (e: fabric.IEvent) => void {
     const { Rect, Ellipse, Line, Polygon, Point } = fabric;
     const { x: originalX, y: originalY } = pointer;
@@ -227,6 +250,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       borderDashArray: [8, 4],
       cornerStrokeColor: 'black',
       borderOpacityWhenMoving: 1,
+      opacity,
     };
 
     switch (mode) {
@@ -363,7 +387,8 @@ export class HookFabricDirective implements OnInit, OnDestroy {
 
   handleTextMode(
     pointer: fabric.Point | undefined,
-    currentTextBox: fabric.Textbox | undefined
+    currentTextBox: fabric.Textbox | undefined,
+    opacity: number
   ): fabric.Textbox | undefined {
     if (!pointer) {
       return;
@@ -392,6 +417,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       editable: true,
       strokeUniform: true,
       cursorWidth: 1,
+      opacity,
     });
 
     this.fabricCanvas.add(currentTextBox);
@@ -441,6 +467,21 @@ export class HookFabricDirective implements OnInit, OnDestroy {
           selected.forEach((obj) => console.log(obj.toJSON()));
           this.fabricCanvas.loadFromJSON;
           this.fabricActionService.updateSelectedObjects(selected);
+        },
+      });
+  }
+
+  registerPathCreated() {
+    this.fabricActionService.opacity$
+      .pipe(
+        switchMap((opacity) =>
+          this.pathCreated$.pipe(map((e) => ({ e, opacity })))
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: ({ e: { path }, opacity }) => {
+          path.opacity = opacity;
         },
       });
   }

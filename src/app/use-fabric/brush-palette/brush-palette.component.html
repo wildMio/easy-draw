@@ -31,10 +31,41 @@
       #lineWidthInput
       type="text"
       class="line-width-input height-100"
-      min="1"
-      max="20"
       [value]="lineWidth$ | async"
       (input)="inputLineWidth(lineWidthInput.value)"
+    />
+  </label>
+</div>
+<span>Opacity</span>
+<div class="stoke-width-wrapper flex items-center">
+  <mat-slider
+    thumbLabel
+    color="primary"
+    min="0"
+    max="1"
+    step="0.01"
+    aria-label="line width units"
+    [value]="opacity$ | async"
+    (change)="changeOpacity($event)"
+  ></mat-slider>
+
+  <label class="input-wrapper flex items-center">
+    <span
+      matPrefix
+      class="opacity-indicator-wrapper height-100 overflow-hidden"
+    >
+      <div
+        class="height-100"
+        [style.opacity]="opacity$ | async"
+        [style.background-color]="color$ | async"
+      ></div>
+    </span>
+    <input
+      #opacityInput
+      type="text"
+      class="line-width-input opacity-input height-100"
+      [value]="opacity$ | async"
+      (input)="inputOpacity(opacityInput.value)"
     />
   </label>
 </div>

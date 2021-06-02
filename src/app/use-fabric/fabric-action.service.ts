@@ -16,6 +16,8 @@ export class FabricActionService {
 
   mode$ = new BehaviorSubject<ModeType>('selection');
 
+  opacity$ = new BehaviorSubject(1);
+
   selectedObjects$ = new BehaviorSubject<fabric.Object[]>([]);
 
   constructor() {}
@@ -38,6 +40,10 @@ export class FabricActionService {
 
   changeMode(mode: ModeType) {
     this.mode$.next(mode);
+  }
+
+  changeOpacity(opacity: number) {
+    this.opacity$.next(opacity);
   }
 
   updateSelectedObjects(selected: fabric.Object[]) {

@@ -13,6 +13,8 @@ export class BrushPaletteComponent {
 
   readonly lineWidth$ = this.fabricActionService.lineWidth$;
 
+  readonly opacity$ = this.fabricActionService.opacity$;
+
   constructor(private readonly fabricActionService: FabricActionService) {}
 
   changeColor(color: string) {
@@ -25,5 +27,13 @@ export class BrushPaletteComponent {
 
   inputLineWidth(value: string) {
     this.fabricActionService.changeLineWidth(parseInt(value, 10));
+  }
+
+  changeOpacity({ value }: MatSliderChange) {
+    this.fabricActionService.changeOpacity(value ?? 1);
+  }
+
+  inputOpacity(value: string) {
+    this.fabricActionService.changeOpacity(parseInt(value, 10));
   }
 }

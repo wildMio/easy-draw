@@ -22,8 +22,14 @@ export class FabricStateService {
   fabricCanvas: fabric.Canvas | null = null;
 
   constructor(readonly fabricActionService: FabricActionService) {
-    const { deleteSelection$, brushColor$, lineWidth$, mode$, canvasColor$ } =
-      fabricActionService;
+    const {
+      deleteSelection$,
+      brushColor$,
+      lineWidth$,
+      mode$,
+      canvasColor$,
+      opacity$,
+    } = fabricActionService;
 
     this.withFabricCanvas(mode$).subscribe({
       next: ({ fabricCanvas, value }) => {
