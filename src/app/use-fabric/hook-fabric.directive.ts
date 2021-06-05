@@ -251,7 +251,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       cornerStrokeColor: 'black',
       borderOpacityWhenMoving: 1,
       opacity,
-    };
+    } as fabric.IObjectOptions;
 
     switch (mode) {
       case 'square': {
@@ -262,6 +262,8 @@ export class HookFabricDirective implements OnInit, OnDestroy {
           strokeWidth,
           strokeLineJoin: 'round',
           strokeUniform: true,
+          rx: 8,
+          ry: 8,
         });
         return ({ pointer }) => {
           if (!pointer) {

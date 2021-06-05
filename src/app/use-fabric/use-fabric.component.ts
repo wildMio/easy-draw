@@ -11,6 +11,7 @@ import {
 import { fabric } from 'fabric';
 import { fromEvent, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { AppStateService } from '../services/app-state.service';
 import { FabricActionService } from './fabric-action.service';
 import { FabricStateService } from './fabric-state.service';
 
@@ -30,11 +31,14 @@ export class UseFabricComponent implements OnDestroy {
 
   destroy$ = new Subject();
 
+  showInstallPromotion$ = this.appStateService.showInstallPromotion$;
+
   constructor(
     @Inject(DOCUMENT) private readonly document: Document,
     private readonly host: ElementRef<HTMLElement>,
     private readonly fabricStateService: FabricStateService,
-    private readonly fabricActionService: FabricActionService
+    private readonly fabricActionService: FabricActionService,
+    private readonly appStateService: AppStateService
   ) {}
 
   ngOnDestroy() {
@@ -59,5 +63,9 @@ export class UseFabricComponent implements OnDestroy {
           }
         },
       });
+  }
+
+  installPromotion() {
+    this.appStateService.installPromotion();
   }
 }

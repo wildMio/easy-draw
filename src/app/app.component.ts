@@ -7,6 +7,7 @@ import {
   Router,
 } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
+import { AppStateService } from './services/app-state.service';
 
 @Component({
   selector: 'app-root',
@@ -29,7 +30,8 @@ export class AppComponent implements OnInit {
   constructor(
     private readonly router: Router,
     private readonly matIconRegistry: MatIconRegistry,
-    private readonly domSanitizer: DomSanitizer
+    private readonly domSanitizer: DomSanitizer,
+    private readonly appStateService: AppStateService
   ) {}
 
   ngOnInit(): void {
