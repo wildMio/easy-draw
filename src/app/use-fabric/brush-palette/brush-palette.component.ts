@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { MatSliderChange } from '@angular/material/slider';
+import { map } from 'rxjs/operators';
 import { FabricActionService } from '../fabric-action.service';
 
 @Component({
@@ -14,6 +15,10 @@ export class BrushPaletteComponent {
   readonly lineWidth$ = this.fabricActionService.lineWidth$;
 
   readonly opacity$ = this.fabricActionService.opacity$;
+
+  readonly displayOpacity$ = this.opacity$.pipe(
+    map((opacity) => opacity * 100)
+  );
 
   constructor(private readonly fabricActionService: FabricActionService) {}
 
@@ -30,10 +35,10 @@ export class BrushPaletteComponent {
   }
 
   changeOpacity({ value }: MatSliderChange) {
-    this.fabricActionService.changeOpacity(value ?? 1);
+    this.fabricActionService.changeOpacity((value ?? 100) / 100);
   }
 
   inputOpacity(value: string) {
-    this.fabricActionService.changeOpacity(parseInt(value, 10));
+    this.fabricActionService.changeOpacity(parseInt(value, 10) / 100);
   }
 }

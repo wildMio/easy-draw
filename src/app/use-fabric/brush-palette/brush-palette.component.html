@@ -42,10 +42,10 @@
     thumbLabel
     color="primary"
     min="0"
-    max="1"
-    step="0.01"
+    max="100"
+    step="1"
     aria-label="line width units"
-    [value]="opacity$ | async"
+    [value]="displayOpacity$ | async"
     (change)="changeOpacity($event)"
   ></mat-slider>
 
@@ -63,8 +63,10 @@
     <input
       #opacityInput
       type="text"
+      min="0"
+      max="100"
       class="line-width-input opacity-input height-100"
-      [value]="opacity$ | async"
+      [value]="displayOpacity$ | async"
       (input)="inputOpacity(opacityInput.value)"
     />
   </label>
