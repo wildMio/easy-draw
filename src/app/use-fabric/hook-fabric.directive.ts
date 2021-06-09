@@ -80,7 +80,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
   pathCreatedHandler = (e: fabric.IEvent) =>
     this.pathCreated$.next(e as any as PathCreatedEvent);
 
-  destroy$ = new Subject();
+  destroy$ = new Subject<void>();
 
   @Input() parentElement!: HTMLElement;
 
@@ -420,6 +420,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       strokeUniform: true,
       cursorWidth: 1,
       opacity,
+      strokeWidth: 6,
     });
 
     this.fabricCanvas.add(currentTextBox);

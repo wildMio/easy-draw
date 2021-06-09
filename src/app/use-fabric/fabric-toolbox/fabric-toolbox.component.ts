@@ -1,5 +1,3 @@
-import { BreakpointObserver } from '@angular/cdk/layout';
-import { DOCUMENT } from '@angular/common';
 import {
   Component,
   ChangeDetectionStrategy,
@@ -7,12 +5,13 @@ import {
   Input,
   OnDestroy,
   Renderer2,
-  Inject,
 } from '@angular/core';
 import { MatButtonToggleChange } from '@angular/material/button-toggle';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { map, takeUntil } from 'rxjs/operators';
 import { colors } from 'src/app/component/color-picker/colors';
+import { AppLayoutBreakpointService } from 'src/app/services/app-layout-breakpoint.service';
+import { AppThemeService } from 'src/app/services/app-theme.service';
 import { FabricActionService } from '../fabric-action.service';
 import { FabricStateService, ModeType } from '../fabric-state.service';
 
@@ -33,9 +32,7 @@ export class FabricToolboxComponent implements OnDestroy {
 
   canvasColors = colors.canvasBackground;
 
-  narrowScreen$ = this.breakObserver
-    .observe('(max-width: 700px)')
-    .pipe(map((narrowScreen) => narrowScreen.matches));
+  narrowScreen$ = this.appLayoutBreakpointService.narrowScreen$;
 
   wideScreen$ = this.narrowScreen$.pipe(
     map((isNarrowScreen) => !isNarrowScreen)
@@ -49,15 +46,15 @@ export class FabricToolboxComponent implements OnDestroy {
     map((selected) => !!selected.length)
   );
 
-  private readonly destroy$ = new Subject();
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
-    @Inject(DOCUMENT) private readonly document: Document,
     private readonly renderer: Renderer2,
     private readonly host: ElementRef<HTMLElement>,
     private readonly fabricStateService: FabricStateService,
     private readonly fabricActionService: FabricActionService,
-    private readonly breakObserver: BreakpointObserver
+    private readonly appLayoutBreakpointService: AppLayoutBreakpointService,
+    private readonly appThemeService: AppThemeService
   ) {
     this.narrowScreen$.pipe(takeUntil(this.destroy$)).subscribe({
       next: (isNarrowScreen) => {
@@ -105,7 +102,6 @@ export class FabricToolboxComponent implements OnDestroy {
   }
 
   toggleTheme() {
-    const body = this.document.body;
-    this.renderer.addClass(body, 'dark-theme');
+    this.appThemeService.toggleTheme();
   }
 }

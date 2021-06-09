@@ -9,8 +9,21 @@ canvas {
   bottom: 0.25rem;
 }
 
-.install-button {
-  position: absolute;
-  top: 0.5rem;
+.app-tools-wrapper {
+  top: 50%;
   right: 0.5rem;
+  transform: translateY(-50%);
+}
+
+.narrow-screen-button {
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+}
+
+.mat-icon.narrow-screen-icon {
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  font-size: 18px;
 }

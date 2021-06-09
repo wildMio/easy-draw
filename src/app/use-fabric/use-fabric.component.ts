@@ -11,7 +11,8 @@ import {
 import { fabric } from 'fabric';
 import { fromEvent, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AppStateService } from '../services/app-state.service';
+import { AppLayoutBreakpointService } from '../services/app-layout-breakpoint.service';
+import { AppPwaCustomService } from '../services/app-pwa-custom.service';
 import { FabricActionService } from './fabric-action.service';
 import { FabricStateService } from './fabric-state.service';
 
@@ -29,16 +30,19 @@ export class UseFabricComponent implements OnDestroy {
 
   hostEl = this.host.nativeElement;
 
-  destroy$ = new Subject();
+  destroy$ = new Subject<void>();
 
-  showInstallPromotion$ = this.appStateService.showInstallPromotion$;
+  showInstallPromotion$ = this.appPwaCustomService.showInstallPromotion$;
+
+  narrowScreen$ = this.appLayoutBreakpointService.narrowScreen$;
 
   constructor(
     @Inject(DOCUMENT) private readonly document: Document,
     private readonly host: ElementRef<HTMLElement>,
     private readonly fabricStateService: FabricStateService,
     private readonly fabricActionService: FabricActionService,
-    private readonly appStateService: AppStateService
+    private readonly appLayoutBreakpointService: AppLayoutBreakpointService,
+    private readonly appPwaCustomService: AppPwaCustomService
   ) {}
 
   ngOnDestroy() {
@@ -66,6 +70,6 @@ export class UseFabricComponent implements OnDestroy {
   }
 
   installPromotion() {
-    this.appStateService.installPromotion();
+    this.appPwaCustomService.installPromotion();
   }
 }

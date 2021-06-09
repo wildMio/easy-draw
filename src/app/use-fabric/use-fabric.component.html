@@ -9,12 +9,30 @@
   <app-fabric-toolbox [fabricCanvas]="fabricCanvas"></app-fabric-toolbox>
 </div>
 
-<button
-  *ngIf="showInstallPromotion$ | async"
-  mat-icon-button
-  class="install-button"
-  matTooltip="Install Easy-Draw"
-  (click)="installPromotion()"
->
-  <mat-icon>browser_updated</mat-icon>
-</button>
+<div class="app-tools-wrapper position-absolute grid">
+  <button
+    *ngIf="showInstallPromotion$ | async"
+    mat-icon-button
+    matTooltip="Install Easy-Draw"
+    matTooltipPosition="before"
+    [class.narrow-screen-button]="narrowScreen$ | async"
+    (click)="installPromotion()"
+  >
+    <mat-icon [class.narrow-screen-icon]="narrowScreen$ | async">
+      browser_updated
+    </mat-icon>
+  </button>
+  <a
+    target="_blank"
+    referrerpolicy="no-referrer"
+    href="https://github.com/wildMio/easy-draw"
+    mat-icon-button
+    matTooltip="Star at GitHub"
+    matTooltipPosition="before"
+    [class.narrow-screen-button]="narrowScreen$ | async"
+  >
+    <mat-icon [class.narrow-screen-icon]="narrowScreen$ | async">
+      star_border
+    </mat-icon>
+  </a>
+</div>
