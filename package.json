@@ -5,11 +5,13 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build-with-source-map": " ng build --prod --source-map",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "prettier": "npx prettier --write .",
     "prettier-check": "npx prettier --check .",
-    "deploy": "ng deploy"
+    "deploy": "ng deploy",
+    "explore": "source-map-explorer dist/**/*.js"
   },
   "private": true,
   "dependencies": {
@@ -64,6 +66,7 @@
     "karma-jasmine-html-reporter": "^1.5.0",
     "open": "^7.0.3",
     "prettier": "^2.3.0",
+    "source-map-explorer": "^2.5.2",
     "typescript": "~4.2.3"
   }
 }
