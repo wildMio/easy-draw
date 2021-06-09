@@ -1,7 +1,6 @@
 import { CdkOverlayOrigin } from '@angular/cdk/overlay';
 import {
   Component,
-  OnInit,
   ChangeDetectionStrategy,
   Input,
   ChangeDetectorRef,
@@ -12,6 +11,8 @@ import {
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { colors } from './colors';
+
+const hexadecimalColorRegExp = /^[\da-f]{3}([\da-f]{3})?$/i;
 
 @Component({
   selector: 'app-color-picker',
@@ -61,5 +62,14 @@ export class ColorPickerComponent {
     this.cdr.markForCheck();
   }
 
-  interceptKeydown(keydown: KeyboardEvent) {}
+  changeColor(color: string) {
+    const checkedColor = hexadecimalColorRegExp.test(color)
+      ? `#${color}`
+      : color === 'transparent'
+      ? color
+      : '';
+    if (checkedColor) {
+      this.colorSelect.emit(checkedColor);
+    }
+  }
 }

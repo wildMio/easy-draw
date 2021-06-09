@@ -5,7 +5,11 @@
   cdkOverlayOrigin
   #trigger="cdkOverlayOrigin"
 >
-  <div class="height-100" matRipple [style.background-color]="color"></div>
+  <div
+    class="color-picker-background height-100"
+    matRipple
+    [style.background-color]="color"
+  ></div>
 </button>
 
 <label class="input-wrapper flex items-center">
@@ -13,9 +17,11 @@
     <mat-icon class="tag-icon">tag</mat-icon>
   </span>
   <input
+    #colorInput
     type="text"
     class="color-input height-100"
     [value]="colorInput$ | async"
+    (input)="changeColor(colorInput.value)"
   />
 </label>
 
@@ -30,14 +36,21 @@
     class="color-picker-panel mat-elevation-z2"
     cdkTrapFocus
     cdkTrapFocusAutoCapture
-    (keydown)="interceptKeydown($event)"
+    role="listbox"
+    appOptionWrapper
   >
     <button
       *ngFor="let color of colors"
-      class="color-picker-button pointer overflow-hidden"
+      class="color-picker-button position-relative pointer overflow-hidden"
+      appOptionItem
+      [style.color]="color | hintForeground"
       (click)="colorSelect.emit(color)"
     >
-      <div class="height-100" matRipple [style.background-color]="color"></div>
+      <div
+        class="color-picker-background height-100"
+        matRipple
+        [style.background-color]="color"
+      ></div>
     </button>
   </div>
 </ng-template>

@@ -1,12 +1,23 @@
 .color-picker-button {
-  border-radius: 4px;
   background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGBZIA/nYDCgBDAm9BGDWAAJyRCgLaBCAAgXwixzAS0pgAAAABJRU5ErkJggg==")
     0;
   height: 1.875rem;
   width: 1.875rem;
-  border: 1px solid #dee2e6;
   padding: 0;
-  // filter: var(--theme-filter);
+  border: 0;
+  &::after {
+    content: attr(data-key);
+    position: absolute;
+    right: 2px;
+    bottom: 1px;
+    opacity: 0.75;
+    pointer-events: none;
+  }
+}
+
+.color-picker-background {
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgba($color: #000000, $alpha: 0.08);
 }
 
 .color-picker-panel {

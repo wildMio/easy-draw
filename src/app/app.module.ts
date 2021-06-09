@@ -10,6 +10,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { HttpClientModule } from '@angular/common/http';
 import { AngularFireModule } from '@angular/fire';
+import { LayoutModule } from '@angular/cdk/layout';
 
 @NgModule({
   declarations: [AppComponent],
@@ -27,6 +28,7 @@ import { AngularFireModule } from '@angular/fire';
     MatProgressBarModule,
     MatIconModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
+    LayoutModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

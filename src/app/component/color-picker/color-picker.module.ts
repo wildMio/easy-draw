@@ -5,12 +5,18 @@ import { MatButtonModule } from '@angular/material/button';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { A11yModule } from '@angular/cdk/a11y';
 import { MatRippleModule } from '@angular/material/core';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { OptionWrapperDirective } from './option-wrapper.directive';
+import { OptionItemDirective } from './option-item.directive';
+import { HintForegroundPipe } from './hint-foreground.pipe';
 
 @NgModule({
-  declarations: [ColorPickerComponent],
+  declarations: [
+    ColorPickerComponent,
+    OptionWrapperDirective,
+    OptionItemDirective,
+    HintForegroundPipe,
+  ],
   imports: [
     CommonModule,
     MatButtonModule,
