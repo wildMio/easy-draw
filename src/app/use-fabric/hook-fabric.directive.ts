@@ -24,7 +24,7 @@ import {
   tap,
 } from 'rxjs/operators';
 import { whenResize } from '../utils/resize-observer';
-import { FabricActionService } from './fabric-action.service';
+import { FabricActionService, StrokeStyle } from './fabric-action.service';
 import { FabricStateService, ModeType } from './fabric-state.service';
 
 interface SelectionCreatedEvent {
@@ -163,13 +163,13 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       freeDraw: true,
     };
 
-    const { mode$, lineWidth$, brushColor$, opacity$ } =
+    const { mode$, lineWidth$, brushColor$, opacity$, strokeStyle$ } =
       this.fabricActionService;
 
-    combineLatest([mode$, lineWidth$, brushColor$, opacity$])
+    combineLatest([mode$, lineWidth$, brushColor$, opacity$, strokeStyle$])
       .pipe(
         auditTime(0),
-        switchMap(([mode, strokeWidth, brushColor, opacity]) => {
+        switchMap(([mode, strokeWidth, brushColor, opacity, strokeStyle]) => {
           if (notShapeMode[mode]) {
             return NEVER;
           }
@@ -203,7 +203,8 @@ export class HookFabricDirective implements OnInit, OnDestroy {
                 mode,
                 strokeWidth,
                 brushColor,
-                opacity
+                opacity,
+                strokeStyle
               );
               return this.mousemoveEvent$.pipe(
                 tap((mousemove) => mousemoveHandler(mousemove)),
@@ -231,7 +232,8 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     mode: ModeType,
     strokeWidth: number,
     stroke: string,
-    opacity: number
+    opacity: number,
+    strokeStyle: StrokeStyle
   ): (e: fabric.IEvent) => void {
     const { Rect, Ellipse, Line, Polygon, Point } = fabric;
     const { x: originalX, y: originalY } = pointer;
@@ -244,7 +246,16 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       this.fabricCanvas.add(obj);
     };
 
+    const strokeDashArray =
+      strokeStyle === 'thin-dash'
+        ? [strokeWidth * 4, strokeWidth * 3]
+        : strokeStyle === 'square-dash'
+        ? [strokeWidth, strokeWidth * 2.5]
+        : [];
+
     const baseConfig = {
+      strokeLineCap: 'round',
+      strokeDashArray,
       padding: strokeWidth,
       borderColor: 'black',
       borderDashArray: [8, 4],

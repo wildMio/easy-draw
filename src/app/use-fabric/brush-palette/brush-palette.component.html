@@ -55,7 +55,7 @@
       class="opacity-indicator-wrapper height-100 overflow-hidden"
     >
       <div
-        class="height-100"
+        class="height-100 opacity-indicator"
         [style.opacity]="opacity$ | async"
         [style.background-color]="color$ | async"
       ></div>
@@ -70,4 +70,33 @@
       (input)="inputOpacity(opacityInput.value)"
     />
   </label>
+</div>
+
+<span>Stoke Style</span>
+<div>
+  <mat-button-toggle-group
+    name="strokeStyle"
+    aria-label="strokeStyle"
+    [value]="strokeStyle$ | async"
+    (change)="changeStrokeStyle($event)"
+  >
+    <mat-button-toggle value="line" matTooltip="Line">
+      <div class="stoke-style-option">
+        <div class="stoke-style-line"></div>
+      </div>
+    </mat-button-toggle>
+    <mat-button-toggle value="thin-dash" matTooltip="Thin Dash">
+      <div class="stoke-style-option">
+        <div class="stoke-style-line"></div>
+        <div class="stoke-style-line"></div>
+      </div>
+    </mat-button-toggle>
+    <mat-button-toggle value="square-dash" matTooltip="Square Dash">
+      <div class="stoke-style-option">
+        <div class="stoke-style-line"></div>
+        <div class="stoke-style-line"></div>
+        <div class="stoke-style-line"></div>
+      </div>
+    </mat-button-toggle>
+  </mat-button-toggle-group>
 </div>

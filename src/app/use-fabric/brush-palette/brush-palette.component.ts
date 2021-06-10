@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { MatButtonToggleChange } from '@angular/material/button-toggle';
 import { MatSliderChange } from '@angular/material/slider';
 import { map } from 'rxjs/operators';
 import { FabricActionService } from '../fabric-action.service';
@@ -20,6 +21,8 @@ export class BrushPaletteComponent {
     map((opacity) => opacity * 100)
   );
 
+  readonly strokeStyle$ = this.fabricActionService.strokeStyle$;
+
   constructor(private readonly fabricActionService: FabricActionService) {}
 
   changeColor(color: string) {
@@ -31,6 +34,9 @@ export class BrushPaletteComponent {
   }
 
   inputLineWidth(value: string) {
+    if (value === '') {
+      return;
+    }
     this.fabricActionService.changeLineWidth(parseInt(value, 10));
   }
 
@@ -39,6 +45,13 @@ export class BrushPaletteComponent {
   }
 
   inputOpacity(value: string) {
+    if (value === '') {
+      return;
+    }
     this.fabricActionService.changeOpacity(parseInt(value, 10) / 100);
+  }
+
+  changeStrokeStyle({ value }: MatButtonToggleChange) {
+    this.fabricActionService.changeStrokeStyle(value);
   }
 }

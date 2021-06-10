@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { ModeType } from './fabric-state.service';
 
+export type StrokeStyle = 'line' | 'thin-dash' | 'square-dash';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -10,7 +12,7 @@ export class FabricActionService {
 
   canvasColor$ = new BehaviorSubject('transparent');
 
-  brushColor$ = new BehaviorSubject('#000000');
+  brushColor$ = new BehaviorSubject('#000');
 
   lineWidth$ = new BehaviorSubject(2);
 
@@ -19,6 +21,8 @@ export class FabricActionService {
   opacity$ = new BehaviorSubject(1);
 
   selectedObjects$ = new BehaviorSubject<fabric.Object[]>([]);
+
+  strokeStyle$ = new BehaviorSubject<StrokeStyle>('line');
 
   constructor() {}
 
@@ -48,5 +52,9 @@ export class FabricActionService {
 
   updateSelectedObjects(selected: fabric.Object[]) {
     this.selectedObjects$.next(selected);
+  }
+
+  changeStrokeStyle(style: StrokeStyle) {
+    this.strokeStyle$.next(style);
   }
 }
