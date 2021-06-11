@@ -23,6 +23,8 @@ export class BrushPaletteComponent {
 
   readonly strokeStyle$ = this.fabricActionService.strokeStyle$;
 
+  readonly edge$ = this.fabricActionService.edge$;
+
   constructor(private readonly fabricActionService: FabricActionService) {}
 
   changeColor(color: string) {
@@ -53,5 +55,9 @@ export class BrushPaletteComponent {
 
   changeStrokeStyle({ value }: MatButtonToggleChange) {
     this.fabricActionService.changeStrokeStyle(value);
+  }
+
+  changeEdge({ value }: MatButtonToggleChange) {
+    this.fabricActionService.changeEdge(value);
   }
 }

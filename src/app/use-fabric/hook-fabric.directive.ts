@@ -24,7 +24,11 @@ import {
   tap,
 } from 'rxjs/operators';
 import { whenResize } from '../utils/resize-observer';
-import { FabricActionService, StrokeStyle } from './fabric-action.service';
+import {
+  Edge,
+  FabricActionService,
+  StrokeStyle,
+} from './fabric-action.service';
 import { FabricStateService, ModeType } from './fabric-state.service';
 
 interface SelectionCreatedEvent {
@@ -163,63 +167,73 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       freeDraw: true,
     };
 
-    const { mode$, lineWidth$, brushColor$, opacity$, strokeStyle$ } =
+    const { mode$, lineWidth$, brushColor$, opacity$, strokeStyle$, edge$ } =
       this.fabricActionService;
 
-    combineLatest([mode$, lineWidth$, brushColor$, opacity$, strokeStyle$])
+    combineLatest([
+      mode$,
+      lineWidth$,
+      brushColor$,
+      opacity$,
+      strokeStyle$,
+      edge$,
+    ])
       .pipe(
         auditTime(0),
-        switchMap(([mode, strokeWidth, brushColor, opacity, strokeStyle]) => {
-          if (notShapeMode[mode]) {
-            return NEVER;
-          }
+        switchMap(
+          ([mode, strokeWidth, brushColor, opacity, strokeStyle, edge]) => {
+            if (notShapeMode[mode]) {
+              return NEVER;
+            }
 
-          if (mode === 'text') {
-            let currentTextBox: fabric.Textbox | undefined;
+            if (mode === 'text') {
+              let currentTextBox: fabric.Textbox | undefined;
+              return this.mousedownEvent$.pipe(
+                tap(({ pointer }) => {
+                  currentTextBox = this.handleTextMode(
+                    pointer,
+                    currentTextBox,
+                    opacity
+                  );
+                }),
+                finalize(() => {
+                  currentTextBox?.exitEditing();
+                  if (currentTextBox && !currentTextBox.text?.length) {
+                    this.fabricCanvas.remove(currentTextBox);
+                  }
+                })
+              );
+            }
+
             return this.mousedownEvent$.pipe(
-              tap(({ pointer }) => {
-                currentTextBox = this.handleTextMode(
-                  pointer,
-                  currentTextBox,
-                  opacity
-                );
-              }),
-              finalize(() => {
-                currentTextBox?.exitEditing();
-                if (currentTextBox && !currentTextBox.text?.length) {
-                  this.fabricCanvas.remove(currentTextBox);
+              switchMap(({ pointer }) => {
+                if (!pointer) {
+                  return NEVER;
                 }
+                const mousemoveHandler = this.generateMousemoveEventHandler(
+                  pointer,
+                  mode,
+                  strokeWidth,
+                  brushColor,
+                  opacity,
+                  strokeStyle,
+                  edge
+                );
+                return this.mousemoveEvent$.pipe(
+                  tap((mousemove) => mousemoveHandler(mousemove)),
+                  finalize(() => {
+                    if (this.drawingObject) {
+                      this.fabricCanvas.remove(this.drawingObject);
+                      this.fabricCanvas.add(this.drawingObject);
+                      this.drawingObject = null;
+                    }
+                  }),
+                  takeUntil(this.mouseupEvent$)
+                );
               })
             );
           }
-
-          return this.mousedownEvent$.pipe(
-            switchMap(({ pointer }) => {
-              if (!pointer) {
-                return NEVER;
-              }
-              const mousemoveHandler = this.generateMousemoveEventHandler(
-                pointer,
-                mode,
-                strokeWidth,
-                brushColor,
-                opacity,
-                strokeStyle
-              );
-              return this.mousemoveEvent$.pipe(
-                tap((mousemove) => mousemoveHandler(mousemove)),
-                finalize(() => {
-                  if (this.drawingObject) {
-                    this.fabricCanvas.remove(this.drawingObject);
-                    this.fabricCanvas.add(this.drawingObject);
-                    this.drawingObject = null;
-                  }
-                }),
-                takeUntil(this.mouseupEvent$)
-              );
-            })
-          );
-        }),
+        ),
         takeUntil(this.destroy$)
       )
       .subscribe({
@@ -233,7 +247,8 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     strokeWidth: number,
     stroke: string,
     opacity: number,
-    strokeStyle: StrokeStyle
+    strokeStyle: StrokeStyle,
+    edge: Edge
   ): (e: fabric.IEvent) => void {
     const { Rect, Ellipse, Line, Polygon, Point } = fabric;
     const { x: originalX, y: originalY } = pointer;
@@ -254,7 +269,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
         : [];
 
     const baseConfig = {
-      strokeLineCap: 'round',
+      strokeLineCap: edge === 'round' ? 'round' : 'square',
       strokeDashArray,
       padding: strokeWidth,
       borderColor: 'black',
@@ -262,6 +277,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       cornerStrokeColor: 'black',
       borderOpacityWhenMoving: 1,
       opacity,
+      strokeLineJoin: edge === 'round' ? edge : undefined,
     } as fabric.IObjectOptions;
 
     switch (mode) {
@@ -271,10 +287,9 @@ export class HookFabricDirective implements OnInit, OnDestroy {
           fill: 'transparent',
           stroke,
           strokeWidth,
-          strokeLineJoin: 'round',
           strokeUniform: true,
-          rx: 8,
-          ry: 8,
+          rx: edge === 'round' ? 8 : 0,
+          ry: edge === 'round' ? 8 : 0,
         });
         return ({ pointer }) => {
           if (!pointer) {
@@ -327,8 +342,6 @@ export class HookFabricDirective implements OnInit, OnDestroy {
           stroke,
           strokeWidth,
           strokeUniform: true,
-          strokeLineCap: 'round',
-          strokeLineJoin: 'round',
         });
         return ({ pointer }) => {
           if (!pointer) {
@@ -362,7 +375,6 @@ export class HookFabricDirective implements OnInit, OnDestroy {
             stroke,
             strokeWidth,
             strokeUniform: true,
-            strokeLineJoin: 'round',
           }
         );
 

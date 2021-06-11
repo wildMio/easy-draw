@@ -4,6 +4,8 @@ import { ModeType } from './fabric-state.service';
 
 export type StrokeStyle = 'line' | 'thin-dash' | 'square-dash';
 
+export type Edge = 'round' | 'sharp';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -23,6 +25,8 @@ export class FabricActionService {
   selectedObjects$ = new BehaviorSubject<fabric.Object[]>([]);
 
   strokeStyle$ = new BehaviorSubject<StrokeStyle>('line');
+
+  edge$ = new BehaviorSubject<Edge>('sharp');
 
   constructor() {}
 
@@ -56,5 +60,9 @@ export class FabricActionService {
 
   changeStrokeStyle(style: StrokeStyle) {
     this.strokeStyle$.next(style);
+  }
+
+  changeEdge(edge: Edge) {
+    this.edge$.next(edge);
   }
 }

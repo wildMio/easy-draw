@@ -100,3 +100,28 @@
     </mat-button-toggle>
   </mat-button-toggle-group>
 </div>
+
+<span>Edge</span>
+<div>
+  <mat-button-toggle-group
+    name="edge"
+    aria-label="edge"
+    [value]="edge$ | async"
+    (change)="changeEdge($event)"
+  >
+    <mat-button-toggle value="sharp" matTooltip="Sharp">
+      <div class="edge-option-wrapper">
+        <div class="edge-option overflow-hidden">
+          <div class="edge"></div>
+        </div>
+      </div>
+    </mat-button-toggle>
+    <mat-button-toggle value="round" matTooltip="Round">
+      <div class="edge-option-wrapper">
+        <div class="edge-option overflow-hidden">
+          <div class="edge round-edge"></div>
+        </div>
+      </div>
+    </mat-button-toggle>
+  </mat-button-toggle-group>
+</div>

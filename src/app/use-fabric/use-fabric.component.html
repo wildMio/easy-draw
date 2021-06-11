@@ -22,6 +22,18 @@
       browser_updated
     </mat-icon>
   </button>
+
+  <a
+    mat-icon-button
+    routerLink="/"
+    matTooltip="Dashboard"
+    matTooltipPosition="before"
+    [class.narrow-screen-button]="narrowScreen$ | async"
+  >
+    <mat-icon [class.narrow-screen-icon]="narrowScreen$ | async">
+      alt_route
+    </mat-icon>
+  </a>
   <a
     target="_blank"
     referrerpolicy="no-referrer"
