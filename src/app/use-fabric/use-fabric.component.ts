@@ -7,6 +7,7 @@ import {
   OnDestroy,
   Inject,
 } from '@angular/core';
+import { SwUpdate } from '@angular/service-worker';
 
 import { fabric } from 'fabric';
 import { fromEvent, Subject } from 'rxjs';
@@ -36,13 +37,16 @@ export class UseFabricComponent implements OnDestroy {
 
   narrowScreen$ = this.appLayoutBreakpointService.narrowScreen$;
 
+  swUpdateAvailable$ = this.swUpdate.available;
+
   constructor(
     @Inject(DOCUMENT) private readonly document: Document,
     private readonly host: ElementRef<HTMLElement>,
     private readonly fabricStateService: FabricStateService,
     private readonly fabricActionService: FabricActionService,
     private readonly appLayoutBreakpointService: AppLayoutBreakpointService,
-    private readonly appPwaCustomService: AppPwaCustomService
+    private readonly appPwaCustomService: AppPwaCustomService,
+    private readonly swUpdate: SwUpdate
   ) {}
 
   ngOnDestroy() {
@@ -71,5 +75,9 @@ export class UseFabricComponent implements OnDestroy {
 
   installPromotion() {
     this.appPwaCustomService.installPromotion();
+  }
+
+  reloadPage() {
+    location.reload();
   }
 }

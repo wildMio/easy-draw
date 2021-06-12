@@ -23,6 +23,19 @@
     </mat-icon>
   </button>
 
+  <button
+    *ngIf="swUpdateAvailable$ | async"
+    mat-icon-button
+    matTooltip="Reload to get the newest feature."
+    matTooltipPosition="before"
+    [class.narrow-screen-button]="narrowScreen$ | async"
+    (click)="reloadPage()"
+  >
+    <mat-icon [class.narrow-screen-icon]="narrowScreen$ | async">
+      tips_and_updates
+    </mat-icon>
+  </button>
+
   <a
     mat-icon-button
     routerLink="/"
