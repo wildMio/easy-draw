@@ -78,6 +78,6 @@ export class UseFabricComponent implements OnDestroy {
   }
 
   reloadPage() {
-    location.reload();
+    this.swUpdate.activateUpdate().then(() => this.document.location.reload());
   }
 }

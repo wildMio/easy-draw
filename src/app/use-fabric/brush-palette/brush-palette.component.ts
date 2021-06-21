@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { MatButtonToggleChange } from '@angular/material/button-toggle';
 import { MatSliderChange } from '@angular/material/slider';
 import { map } from 'rxjs/operators';
+import { colors } from 'src/app/component/color-picker/colors';
 import { FabricActionService } from '../fabric-action.service';
 
 @Component({
@@ -12,6 +13,8 @@ import { FabricActionService } from '../fabric-action.service';
 })
 export class BrushPaletteComponent {
   readonly color$ = this.fabricActionService.brushColor$;
+
+  readonly fillColor$ = this.fabricActionService.fillColor$;
 
   readonly lineWidth$ = this.fabricActionService.lineWidth$;
 
@@ -24,11 +27,16 @@ export class BrushPaletteComponent {
   readonly strokeStyle$ = this.fabricActionService.strokeStyle$;
 
   readonly edge$ = this.fabricActionService.edge$;
+  readonly backgroundColors = colors.elementBackground;
 
   constructor(private readonly fabricActionService: FabricActionService) {}
 
   changeColor(color: string) {
     this.fabricActionService.changeBrushColor(color);
+  }
+
+  changeFillColor(color: string) {
+    this.fabricActionService.changeFillColor(color);
   }
 
   changeLineWidth({ value }: MatSliderChange) {

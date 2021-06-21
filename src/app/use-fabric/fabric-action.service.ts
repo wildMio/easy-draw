@@ -10,23 +10,25 @@ export type Edge = 'round' | 'sharp';
   providedIn: 'root',
 })
 export class FabricActionService {
-  deleteSelection$ = new Subject();
+  deleteSelection$ = new Subject<void>();
 
-  canvasColor$ = new BehaviorSubject('transparent');
+  canvasColor$ = new BehaviorSubject<string>('transparent');
 
-  brushColor$ = new BehaviorSubject('#000');
+  brushColor$ = new BehaviorSubject<string>('#000000');
 
-  lineWidth$ = new BehaviorSubject(2);
+  fillColor$ = new BehaviorSubject<string>('transparent');
+
+  lineWidth$ = new BehaviorSubject<number>(2);
 
   mode$ = new BehaviorSubject<ModeType>('selection');
 
-  opacity$ = new BehaviorSubject(1);
+  opacity$ = new BehaviorSubject<number>(1);
 
   selectedObjects$ = new BehaviorSubject<fabric.Object[]>([]);
 
   strokeStyle$ = new BehaviorSubject<StrokeStyle>('line');
 
-  edge$ = new BehaviorSubject<Edge>('sharp');
+  edge$ = new BehaviorSubject<Edge>('round');
 
   constructor() {}
 
@@ -40,6 +42,10 @@ export class FabricActionService {
 
   changeBrushColor(color: string) {
     this.brushColor$.next(color);
+  }
+
+  changeFillColor(color: string) {
+    this.fillColor$.next(color);
   }
 
   changeLineWidth(lineWidth: number) {

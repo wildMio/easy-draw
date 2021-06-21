@@ -3,6 +3,12 @@
   [color]="color$ | async"
   (colorSelect)="changeColor($event)"
 ></app-color-picker>
+<span>Background</span>
+<app-color-picker
+  [colors]="backgroundColors"
+  [color]="fillColor$ | async"
+  (colorSelect)="changeFillColor($event)"
+></app-color-picker>
 <span>Stroke Width</span>
 <div class="stoke-width-wrapper flex items-center">
   <mat-slider

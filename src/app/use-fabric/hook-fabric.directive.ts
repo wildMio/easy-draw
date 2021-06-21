@@ -84,6 +84,10 @@ export class HookFabricDirective implements OnInit, OnDestroy {
   pathCreatedHandler = (e: fabric.IEvent) =>
     this.pathCreated$.next(e as any as PathCreatedEvent);
 
+  mouseWheel$ = new Subject<fabric.IEvent>();
+
+  mouseWheelHandler = (e: fabric.IEvent) => this.mouseWheel$.next(e);
+
   destroy$ = new Subject<void>();
 
   @Input() parentElement!: HTMLElement;
@@ -137,12 +141,15 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       this.fabricCanvas.on('selection:updated', this.selectionUpdatedHandler);
       this.fabricCanvas.on('selection:cleared', this.selectionClearedHandler);
       this.fabricCanvas.on('path:created', this.pathCreatedHandler);
+      this.fabricCanvas.on('mouse:wheel', this.mouseWheelHandler);
 
       this.registerMouseDrawShape();
 
       this.registerSelectedChange();
 
       this.registerPathCreated();
+
+      this.registerMouseWheel();
     });
 
     this.fabricCanvasReady.emit(this.fabricCanvas);
@@ -159,6 +166,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     this.fabricCanvas.off('selection:updated', this.selectionUpdatedHandler);
     this.fabricCanvas.off('selection:cleared', this.selectionClearedHandler);
     this.fabricCanvas.off('path:created', this.pathCreatedHandler);
+    this.fabricCanvas.off('mouse:wheel', this.mouseWheelHandler);
   }
 
   registerMouseDrawShape() {
@@ -167,8 +175,15 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       freeDraw: true,
     };
 
-    const { mode$, lineWidth$, brushColor$, opacity$, strokeStyle$, edge$ } =
-      this.fabricActionService;
+    const {
+      mode$,
+      lineWidth$,
+      brushColor$,
+      opacity$,
+      strokeStyle$,
+      edge$,
+      fillColor$,
+    } = this.fabricActionService;
 
     combineLatest([
       mode$,
@@ -177,11 +192,21 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       opacity$,
       strokeStyle$,
       edge$,
+      fillColor$,
     ])
       .pipe(
-        auditTime(0),
+        // use any because typescript limit. fyi: https://github.com/ReactiveX/rxjs/issues/3601
+        auditTime<any>(0),
         switchMap(
-          ([mode, strokeWidth, brushColor, opacity, strokeStyle, edge]) => {
+          ([
+            mode,
+            strokeWidth,
+            brushColor,
+            opacity,
+            strokeStyle,
+            edge,
+            fillColor,
+          ]: [ModeType, number, string, number, StrokeStyle, Edge, string]) => {
             if (notShapeMode[mode]) {
               return NEVER;
             }
@@ -193,7 +218,9 @@ export class HookFabricDirective implements OnInit, OnDestroy {
                   currentTextBox = this.handleTextMode(
                     pointer,
                     currentTextBox,
-                    opacity
+                    opacity,
+                    brushColor,
+                    fillColor
                   );
                 }),
                 finalize(() => {
@@ -217,7 +244,8 @@ export class HookFabricDirective implements OnInit, OnDestroy {
                   brushColor,
                   opacity,
                   strokeStyle,
-                  edge
+                  edge,
+                  fillColor
                 );
                 return this.mousemoveEvent$.pipe(
                   tap((mousemove) => mousemoveHandler(mousemove)),
@@ -248,7 +276,8 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     stroke: string,
     opacity: number,
     strokeStyle: StrokeStyle,
-    edge: Edge
+    edge: Edge,
+    fill: string | undefined
   ): (e: fabric.IEvent) => void {
     const { Rect, Ellipse, Line, Polygon, Point } = fabric;
     const { x: originalX, y: originalY } = pointer;
@@ -278,13 +307,13 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       borderOpacityWhenMoving: 1,
       opacity,
       strokeLineJoin: edge === 'round' ? edge : undefined,
+      fill,
     } as fabric.IObjectOptions;
 
     switch (mode) {
       case 'square': {
         const rect = new Rect({
           ...baseConfig,
-          fill: 'transparent',
           stroke,
           strokeWidth,
           strokeUniform: true,
@@ -312,7 +341,6 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       case 'ellipse': {
         const ellipse = new Ellipse({
           ...baseConfig,
-          fill: 'transparent',
           stroke,
           strokeWidth,
           strokeUniform: true,
@@ -338,7 +366,6 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       case 'line': {
         const line = new Line([], {
           ...baseConfig,
-          fill: 'transparent',
           stroke,
           strokeWidth,
           strokeUniform: true,
@@ -371,7 +398,6 @@ export class HookFabricDirective implements OnInit, OnDestroy {
           ],
           {
             ...baseConfig,
-            fill: 'transparent',
             stroke,
             strokeWidth,
             strokeUniform: true,
@@ -413,7 +439,9 @@ export class HookFabricDirective implements OnInit, OnDestroy {
   handleTextMode(
     pointer: fabric.Point | undefined,
     currentTextBox: fabric.Textbox | undefined,
-    opacity: number
+    opacity: number,
+    fill: string | undefined,
+    textBackgroundColor: string | undefined
   ): fabric.Textbox | undefined {
     if (!pointer) {
       return;
@@ -430,7 +458,9 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       borderDashArray: [8, 4],
       cornerStrokeColor: 'black',
       borderOpacityWhenMoving: 1,
-    };
+      fill,
+      textBackgroundColor,
+    } as fabric.ITextOptions;
 
     const { Textbox } = fabric;
     const { x: left, y: top } = pointer;
@@ -510,5 +540,19 @@ export class HookFabricDirective implements OnInit, OnDestroy {
           path.opacity = opacity;
         },
       });
+  }
+
+  registerMouseWheel() {
+    // this.mouseWheel$.pipe(takeUntil(this.destroy$)).subscribe({
+    //   next: (fabricEvent) => {
+    //     const e = fabricEvent.e as MouseEvent;
+    //     e.shiftKey;
+    //     const { x, y } = this.fabricCanvas.getVpCenter();
+    //     const point = new fabric.Point(x + 100, y);
+    //     // this.fabricCanvas.add(point);
+    //     this.fabricCanvas.zoomToPoint({ x: x + 400, y } as any, 1);
+    //     this.fabricCanvas.requestRenderAll();
+    //   },
+    // });
   }
 }
