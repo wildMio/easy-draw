@@ -59,7 +59,7 @@ export class ColorPickerComponent {
   }
 
   overlayDetach() {
-    this.cdr.markForCheck();
+    this.isOpen = false;
   }
 
   changeColor(color: string) {

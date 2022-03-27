@@ -40,10 +40,10 @@
           </button>
         </div>
         <div class="justify-self-center">
-          <button mat-button matTooltip="Undo">
+          <button mat-button matTooltip="Undo" [disabled]="notImplemented">
             <mat-icon>undo</mat-icon>
           </button>
-          <button mat-button matTooltip="Redo">
+          <button mat-button matTooltip="Redo" [disabled]="notImplemented">
             <mat-icon>redo</mat-icon>
           </button>
         </div>
@@ -64,19 +64,42 @@
   <ng-template #wideScreenSetting>
     <div class="basic-border pointer-events-all">
       <div class="flex">
-        <button mat-button matTooltip="Load" (click)="export()">
+        <button
+          mat-button
+          matTooltip="Load"
+          [disabled]="notImplemented"
+          (click)="export()"
+        >
           <mat-icon>folder_open</mat-icon>
         </button>
-        <button mat-button matTooltip="Save" (click)="export()">
+        <button
+          mat-button
+          matTooltip="Save"
+          [disabled]="notImplemented"
+          (click)="export()"
+        >
           <mat-icon>save</mat-icon>
         </button>
-        <button mat-button matTooltip="Export" (click)="export()">
+        <button
+          mat-button
+          matTooltip="Export"
+          [disabled]="notImplemented"
+          (click)="export()"
+        >
           <mat-icon>save_alt</mat-icon>
         </button>
-        <button mat-button matTooltip="Store at browser">
+        <button
+          mat-button
+          matTooltip="Store at browser"
+          [disabled]="notImplemented"
+        >
           <mat-icon>archive</mat-icon>
         </button>
-        <button mat-button matTooltip="Browser storage">
+        <button
+          mat-button
+          matTooltip="Browser storage"
+          [disabled]="notImplemented"
+        >
           <mat-icon>storage</mat-icon>
         </button>
       </div>
@@ -87,7 +110,7 @@
         <button mat-button matTooltip="Theme Mode" (click)="toggleTheme()">
           <mat-icon>brightness_4</mat-icon>
         </button>
-        <button mat-button matTooltip="Palette">
+        <button mat-button matTooltip="Palette" [disabled]="notImplemented">
           <mat-icon>palette</mat-icon>
         </button>
       </div>

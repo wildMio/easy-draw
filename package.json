@@ -8,8 +8,8 @@
     "build-with-source-map": " ng build --prod --source-map",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "prettier": "npx prettier --write .",
-    "prettier-check": "npx prettier --check .",
+    "prettier": "npx prettier --write ./src",
+    "prettier-check": "npx prettier --check ./src",
     "deploy": "ng deploy",
     "explore": "source-map-explorer dist/**/*.js"
   },

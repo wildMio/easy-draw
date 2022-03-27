@@ -46,6 +46,8 @@ export class FabricToolboxComponent implements OnDestroy {
     map((selected) => !!selected.length)
   );
 
+  notImplemented = true;
+
   private readonly destroy$ = new Subject<void>();
 
   constructor(
