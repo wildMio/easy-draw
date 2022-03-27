@@ -9,7 +9,6 @@ import { environment } from '../environments/environment';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { HttpClientModule } from '@angular/common/http';
-import { AngularFireModule } from '@angular/fire';
 import { LayoutModule } from '@angular/cdk/layout';
 
 @NgModule({
@@ -27,7 +26,6 @@ import { LayoutModule } from '@angular/cdk/layout';
     }),
     MatProgressBarModule,
     MatIconModule,
-    AngularFireModule.initializeApp(environment.firebaseConfig),
     LayoutModule,
   ],
   providers: [],
