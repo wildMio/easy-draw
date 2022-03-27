@@ -34,7 +34,6 @@ import { FabricStateService, ModeType } from './fabric-state.service';
 interface SelectionCreatedEvent {
   e: MouseEvent;
   selected: fabric.Object[];
-  target: fabric.Object;
 }
 
 interface SelectionUpdatedEvent {
@@ -42,7 +41,6 @@ interface SelectionUpdatedEvent {
   selected: fabric.Object[];
   deselected: fabric.Object[];
   updated: fabric.Object;
-  target: fabric.Object;
 }
 
 interface SelectionClearedEvent {
@@ -491,23 +489,21 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     };
 
     const created$ = this.selectionCreated$.pipe(
-      tap(({ target, selected }) => {
-        let padding = 0;
-        selected.forEach(
-          (obj) => (padding = Math.max(padding, obj.strokeWidth ?? 0))
+      tap(({ selected }) => {
+        const padding = Math.max(
+          ...selected.map(({ strokeWidth }) => strokeWidth ?? 0)
         );
-
-        adjustSelectionStyle(target, padding);
+        selected.forEach((obj) => adjustSelectionStyle(obj, padding));
       })
     );
 
     const updated$ = this.selectionUpdated$.pipe(
-      tap(({ target, selected }) => {
-        let padding = 0;
-        selected.forEach(
-          (obj) => (padding = Math.max(padding, obj.strokeWidth ?? 0))
+      tap(({ selected }) => {
+        const padding = Math.max(
+          ...selected.map(({ strokeWidth }) => strokeWidth ?? 0)
         );
-        adjustSelectionStyle(target, padding);
+
+        selected.forEach((obj) => adjustSelectionStyle(obj, padding));
       })
     );
 
