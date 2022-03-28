@@ -1,9 +1,11 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { MatButtonToggleChange } from '@angular/material/button-toggle';
 import { MatSliderChange } from '@angular/material/slider';
+
 import { map } from 'rxjs/operators';
-import { colors } from 'src/app/component/color-picker/colors';
+
 import { FabricActionService } from '../fabric-action.service';
+import { colors } from 'src/app/component/color-picker/colors';
 
 @Component({
   selector: 'app-brush-palette',

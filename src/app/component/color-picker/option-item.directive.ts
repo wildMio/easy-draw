@@ -6,8 +6,10 @@ import {
   OnInit,
   Renderer2,
 } from '@angular/core';
+
 import { fromEvent, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
 import { OptionWrapperDirective } from './option-wrapper.directive';
 
 const indexKeys = [

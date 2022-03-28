@@ -9,6 +9,7 @@ import {
   Output,
   Renderer2,
 } from '@angular/core';
+
 import { fabric } from 'fabric';
 import { combineLatest, merge, NEVER, Subject } from 'rxjs';
 import {
@@ -19,10 +20,10 @@ import {
   mapTo,
   startWith,
   switchMap,
-  switchMapTo,
   takeUntil,
   tap,
 } from 'rxjs/operators';
+
 import { whenResize } from '../utils/resize-observer';
 import {
   Edge,
@@ -263,6 +264,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
         takeUntil(this.destroy$)
       )
       .subscribe({
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         next: () => {},
       });
   }
@@ -277,7 +279,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     edge: Edge,
     fill: string | undefined
   ): (e: fabric.IEvent) => void {
-    const { Rect, Ellipse, Line, Polygon, Point } = fabric;
+    const { Rect, Ellipse, Line, Polygon } = fabric;
     const { x: originalX, y: originalY } = pointer;
 
     let isFirst = true;
@@ -415,14 +417,18 @@ export class HookFabricDirective implements OnInit, OnDestroy {
 
           diamond.setOptions({ top, left, width, height });
 
-          diamond.points![0].x = 0;
-          diamond.points![0].y = -height / 2;
-          diamond.points![1].x = width / 2;
-          diamond.points![1].y = 0;
-          diamond.points![2].x = 0;
-          diamond.points![2].y = height / 2;
-          diamond.points![3].x = -width / 2;
-          diamond.points![3].y = 0;
+          if (!diamond.points) {
+            return;
+          }
+
+          diamond.points[0].x = 0;
+          diamond.points[0].y = -height / 2;
+          diamond.points[1].x = width / 2;
+          diamond.points[1].y = 0;
+          diamond.points[2].x = 0;
+          diamond.points[2].y = height / 2;
+          diamond.points[3].x = -width / 2;
+          diamond.points[3].y = 0;
 
           isFirst && addObject(diamond);
 
@@ -430,6 +436,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
         };
       }
       default:
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         return () => {};
     }
   }

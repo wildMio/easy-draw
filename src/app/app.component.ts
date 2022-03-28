@@ -13,7 +13,9 @@ import {
   RouteConfigLoadStart,
   Router,
 } from '@angular/router';
+
 import { filter, map } from 'rxjs/operators';
+
 import { AppPwaCustomService } from './services/app-pwa-custom.service';
 import { AppThemeService } from './services/app-theme.service';
 

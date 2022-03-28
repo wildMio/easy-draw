@@ -8,8 +8,10 @@ import {
   EventEmitter,
   HostBinding,
 } from '@angular/core';
+
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
+
 import { colors } from './colors';
 
 const hexadecimalColorRegExp = /^[\da-f]{3}([\da-f]{3})?$/i;

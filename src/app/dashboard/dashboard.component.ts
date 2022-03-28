@@ -8,6 +8,4 @@ import { Component, ChangeDetectionStrategy, HostBinding } from '@angular/core';
 })
 export class DashboardComponent {
   @HostBinding('class') class = 'flex-center height-100 gap-1';
-
-  constructor() {}
 }

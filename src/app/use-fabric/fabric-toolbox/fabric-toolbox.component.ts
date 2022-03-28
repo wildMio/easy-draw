@@ -7,13 +7,15 @@ import {
   Renderer2,
 } from '@angular/core';
 import { MatButtonToggleChange } from '@angular/material/button-toggle';
+
 import { BehaviorSubject, Subject } from 'rxjs';
 import { map, takeUntil } from 'rxjs/operators';
+
+import { FabricActionService } from '../fabric-action.service';
+import { FabricStateService, ModeType } from '../fabric-state.service';
 import { colors } from 'src/app/component/color-picker/colors';
 import { AppLayoutBreakpointService } from 'src/app/services/app-layout-breakpoint.service';
 import { AppThemeService } from 'src/app/services/app-theme.service';
-import { FabricActionService } from '../fabric-action.service';
-import { FabricStateService, ModeType } from '../fabric-state.service';
 
 @Component({
   selector: 'app-fabric-toolbox',

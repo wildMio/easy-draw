@@ -12,6 +12,7 @@ import { SwUpdate } from '@angular/service-worker';
 import { fabric } from 'fabric';
 import { fromEvent, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
 import { AppLayoutBreakpointService } from '../services/app-layout-breakpoint.service';
 import { AppPwaCustomService } from '../services/app-pwa-custom.service';
 import { FabricActionService } from './fabric-action.service';

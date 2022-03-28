@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, NEVER, Observable } from 'rxjs';
-import { FabricActionService } from './fabric-action.service';
+
 import { fabric } from 'fabric';
+import { BehaviorSubject, NEVER, Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
+
+import { FabricActionService } from './fabric-action.service';
 
 export type ModeType =
   | 'selection'
@@ -28,7 +30,7 @@ export class FabricStateService {
       lineWidth$,
       mode$,
       canvasColor$,
-      opacity$,
+      // opacity$,
     } = fabricActionService;
 
     this.withFabricCanvas(mode$).subscribe({

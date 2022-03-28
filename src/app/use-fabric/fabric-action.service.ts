@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
+
 import { BehaviorSubject, Subject } from 'rxjs';
+
 import { ModeType } from './fabric-state.service';
 
 export type StrokeStyle = 'line' | 'thin-dash' | 'square-dash';
@@ -29,8 +31,6 @@ export class FabricActionService {
   strokeStyle$ = new BehaviorSubject<StrokeStyle>('line');
 
   edge$ = new BehaviorSubject<Edge>('round');
-
-  constructor() {}
 
   deleteSelection() {
     this.deleteSelection$.next();
