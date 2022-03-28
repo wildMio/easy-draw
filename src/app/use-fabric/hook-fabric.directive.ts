@@ -11,7 +11,16 @@ import {
 } from '@angular/core';
 
 import { fabric } from 'fabric';
-import { combineLatest, merge, NEVER, Subject } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  fromEvent,
+  merge,
+  NEVER,
+  Observable,
+  ReplaySubject,
+  Subject,
+} from 'rxjs';
 import {
   auditTime,
   debounceTime,
@@ -53,39 +62,49 @@ interface PathCreatedEvent {
   path: fabric.Path;
 }
 
+const fabricCanvasEvent =
+  (eventName: string) => (source: Observable<fabric.Canvas>) =>
+    source.pipe(
+      switchMap((fabricCanvas) => fromEvent(fabricCanvas, eventName))
+    );
+
 @Directive({
   selector: '[appHookFabric]',
 })
 export class HookFabricDirective implements OnInit, OnDestroy {
   fabricCanvas!: fabric.Canvas;
 
-  mousedownEvent$ = new Subject<fabric.IEvent>();
-  mousemoveEvent$ = new Subject<fabric.IEvent>();
-  mouseupEvent$ = new Subject<fabric.IEvent>();
+  fabricCanvas$ = new ReplaySubject<fabric.Canvas>(1);
 
-  mousedownHandler = (e: fabric.IEvent) => this.mousedownEvent$.next(e);
-  mousemoveHandler = (e: fabric.IEvent) => this.mousemoveEvent$.next(e);
-  mouseupHandler = (e: fabric.IEvent) => this.mouseupEvent$.next(e);
+  objectModifiedEvent$ = this.fabricCanvas$.pipe(
+    fabricCanvasEvent('object:modified')
+  );
+  objectAddedEvent$ = this.fabricCanvas$.pipe(
+    fabricCanvasEvent('object:added')
+  );
+  objectRemovedEvent$ = this.fabricCanvas$.pipe(
+    fabricCanvasEvent('object:removed')
+  );
 
-  selectionCreated$ = new Subject<SelectionCreatedEvent>();
-  selectionUpdated$ = new Subject<SelectionUpdatedEvent>();
-  selectionCleared$ = new Subject<SelectionClearedEvent>();
+  mousedownEvent$ = this.fabricCanvas$.pipe(fabricCanvasEvent('mouse:down'));
+  mousemoveEvent$ = this.fabricCanvas$.pipe(fabricCanvasEvent('mouse:move'));
+  mouseupEvent$ = this.fabricCanvas$.pipe(fabricCanvasEvent('mouse:up'));
 
-  selectionCreatedHandler = (e: fabric.IEvent) =>
-    this.selectionCreated$.next(e as SelectionCreatedEvent);
-  selectionUpdatedHandler = (e: fabric.IEvent) =>
-    this.selectionUpdated$.next(e as SelectionUpdatedEvent);
-  selectionClearedHandler = (e: fabric.IEvent) =>
-    this.selectionCleared$.next(e as SelectionClearedEvent);
+  selectionCreated$ = this.fabricCanvas$.pipe(
+    fabricCanvasEvent('selection:created')
+  ) as Observable<SelectionCreatedEvent>;
+  selectionUpdated$ = this.fabricCanvas$.pipe(
+    fabricCanvasEvent('mouse:updated')
+  ) as Observable<SelectionUpdatedEvent>;
+  selectionCleared$ = this.fabricCanvas$.pipe(
+    fabricCanvasEvent('mouse:cleared')
+  ) as Observable<SelectionClearedEvent>;
 
-  pathCreated$ = new Subject<PathCreatedEvent>();
+  pathCreated$ = this.fabricCanvas$.pipe(
+    fabricCanvasEvent('path:created')
+  ) as any as Observable<PathCreatedEvent>;
 
-  pathCreatedHandler = (e: fabric.IEvent) =>
-    this.pathCreated$.next(e as any as PathCreatedEvent);
-
-  mouseWheel$ = new Subject<fabric.IEvent>();
-
-  mouseWheelHandler = (e: fabric.IEvent) => this.mouseWheel$.next(e);
+  mouseWheel$ = this.fabricCanvas$.pipe(fabricCanvasEvent('mouse:wheel'));
 
   destroy$ = new Subject<void>();
 
@@ -110,6 +129,8 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       enableRetinaScaling: true,
     } as fabric.ICanvasOptions);
 
+    this.fabricCanvas$.next(this.fabricCanvas);
+
     this.zone.runOutsideAngular(() => {
       whenResize(this.parentElement)
         .pipe(
@@ -133,14 +154,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
           },
         });
 
-      this.fabricCanvas.on('mouse:down', this.mousedownHandler);
-      this.fabricCanvas.on('mouse:move', this.mousemoveHandler);
-      this.fabricCanvas.on('mouse:up', this.mouseupHandler);
-      this.fabricCanvas.on('selection:created', this.selectionCreatedHandler);
-      this.fabricCanvas.on('selection:updated', this.selectionUpdatedHandler);
-      this.fabricCanvas.on('selection:cleared', this.selectionClearedHandler);
-      this.fabricCanvas.on('path:created', this.pathCreatedHandler);
-      this.fabricCanvas.on('mouse:wheel', this.mouseWheelHandler);
+      this.registerSaveToStorage();
 
       this.registerMouseDrawShape();
 
@@ -157,15 +171,20 @@ export class HookFabricDirective implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
 
-    this.fabricCanvas.off('mouse:down', this.mousedownHandler);
-    this.fabricCanvas.off('mouse:move', this.mousemoveHandler);
-    this.fabricCanvas.off('mouse:up', this.mouseupHandler);
-    this.fabricCanvas.off('selection:created', this.selectionCreatedHandler);
-    this.fabricCanvas.off('selection:updated', this.selectionUpdatedHandler);
-    this.fabricCanvas.off('selection:cleared', this.selectionClearedHandler);
-    this.fabricCanvas.off('path:created', this.pathCreatedHandler);
-    this.fabricCanvas.off('mouse:wheel', this.mouseWheelHandler);
+  registerSaveToStorage() {
+    merge(
+      this.objectModifiedEvent$,
+      this.objectAddedEvent$,
+      this.objectRemovedEvent$
+    )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (e) => {
+          console.log(e);
+        },
+      });
   }
 
   registerMouseDrawShape() {
@@ -263,10 +282,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
         ),
         takeUntil(this.destroy$)
       )
-      .subscribe({
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        next: () => {},
-      });
+      .subscribe();
   }
 
   generateMousemoveEventHandler(
@@ -515,16 +531,13 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     );
 
     const cleared$ = this.selectionCleared$.pipe(
-      mapTo({ selected: [] as fabric.Object[] })
+      map(() => ({ selected: [] as fabric.Object[] }))
     );
 
     merge(created$, updated$, cleared$)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: ({ selected }) => {
-          console.log(this.fabricCanvas.toJSON());
-          selected.forEach((obj) => console.log(obj.toJSON()));
-          this.fabricCanvas.loadFromJSON;
           this.fabricActionService.updateSelectedObjects(selected);
         },
       });
