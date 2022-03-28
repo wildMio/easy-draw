@@ -7,5 +7,5 @@ import { Component, ChangeDetectionStrategy, HostBinding } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardComponent {
-  @HostBinding('class') class = 'flex-center height-100 gap-1';
+  @HostBinding('class') class = 'flex-center h-full gap-1';
 }

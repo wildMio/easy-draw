@@ -5,11 +5,11 @@
   (fabricCanvasReady)="fabricCanvasReady($event)"
 ></canvas>
 
-<div class="tools-wrapper position-absolute width-100 pointer-events-none">
+<div class="tools-wrapper absolute w-full pointer-events-none">
   <app-fabric-toolbox [fabricCanvas]="fabricCanvas"></app-fabric-toolbox>
 </div>
 
-<div class="app-tools-wrapper position-absolute grid">
+<div class="app-tools-wrapper absolute grid">
   <button
     *ngIf="showInstallPromotion$ | async"
     mat-icon-button

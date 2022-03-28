@@ -1,11 +1,11 @@
 <div class="setting-wrapper grid-area-var" style="--grid-area: setting">
   <ng-container *ngIf="narrowScreen$ | async; else wideScreenSetting">
-    <div class="basic-border pointer-events-all">
+    <div class="basic-border pointer-events-auto">
       <div *ngIf="showNarrowScreenTools$ | async" class="narrow-tools-wrapper">
         <button
           mat-stroked-button
           matTooltip="Clear canvas"
-          class="width-100"
+          class="w-full"
           (click)="clear()"
         >
           <mat-icon>delete_forever</mat-icon>
@@ -62,7 +62,7 @@
   </ng-container>
 
   <ng-template #wideScreenSetting>
-    <div class="basic-border pointer-events-all">
+    <div class="basic-border pointer-events-auto">
       <div class="flex">
         <button
           mat-button
@@ -123,7 +123,7 @@
         ></app-color-picker>
       </div>
     </div>
-    <div class="basic-border pointer-events-all brush-wrapper">
+    <div class="basic-border pointer-events-auto brush-wrapper">
       <app-brush-palette></app-brush-palette>
       <button mat-button matTooltip="Delete Selection" (click)="delete()">
         <mat-icon>delete</mat-icon>
@@ -135,7 +135,7 @@
   <mat-button-toggle-group
     name="mode"
     aria-label="Mode"
-    class="pointer-events-all"
+    class="pointer-events-auto"
     [value]="mode$ | async"
     (change)="changeMode($event)"
   >

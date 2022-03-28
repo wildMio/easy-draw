@@ -26,7 +26,7 @@ import { FabricStateService } from './fabric-state.service';
   // providers: [FabricStateService],
 })
 export class UseFabricComponent implements OnDestroy {
-  @HostBinding('class') class = 'block height-100';
+  @HostBinding('class') class = 'block h-full';
 
   fabricCanvas!: fabric.Canvas;
 
