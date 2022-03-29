@@ -7,11 +7,11 @@ import {
   OnDestroy,
   Inject,
 } from '@angular/core';
-import { SwUpdate } from '@angular/service-worker';
+import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 
 import { fabric } from 'fabric';
 import { fromEvent, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { filter, map, takeUntil } from 'rxjs/operators';
 
 import { AppLayoutBreakpointService } from '../services/app-layout-breakpoint.service';
 import { AppPwaCustomService } from '../services/app-pwa-custom.service';
@@ -38,7 +38,14 @@ export class UseFabricComponent implements OnDestroy {
 
   narrowScreen$ = this.appLayoutBreakpointService.narrowScreen$;
 
-  swUpdateAvailable$ = this.swUpdate.available;
+  swUpdateAvailable$ = this.swUpdate.versionUpdates.pipe(
+    filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
+    map((evt) => ({
+      type: 'UPDATE_AVAILABLE',
+      current: evt.currentVersion,
+      available: evt.latestVersion,
+    }))
+  );
 
   constructor(
     @Inject(DOCUMENT) private readonly document: Document,

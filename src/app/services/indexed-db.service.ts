@@ -1,6 +1,26 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
+
+import { IDBPDatabase, openDB, StoreNames } from 'idb';
+import { from, Observable } from 'rxjs';
+
+import { IDB_VERSION_TOKEN } from './idb-version.token';
 
 @Injectable({
   providedIn: 'root',
 })
-export class IndexedDBService {}
+export class IndexedDBService {
+  constructor(@Inject(IDB_VERSION_TOKEN) private readonly idbVersion: number) {}
+
+  openDb$<T>(
+    name: string,
+    storeName: StoreNames<T>
+  ): Observable<IDBPDatabase<T>> {
+    return from(
+      openDB<T>(name, this.idbVersion, {
+        upgrade: (db): void => {
+          db.createObjectStore(storeName);
+        },
+      })
+    );
+  }
+}

@@ -12,7 +12,6 @@ import {
 
 import { fabric } from 'fabric';
 import {
-  BehaviorSubject,
   combineLatest,
   fromEvent,
   merge,
@@ -26,7 +25,6 @@ import {
   debounceTime,
   finalize,
   map,
-  mapTo,
   startWith,
   switchMap,
   takeUntil,
@@ -40,6 +38,7 @@ import {
   StrokeStyle,
 } from './fabric-action.service';
 import { FabricStateService, ModeType } from './fabric-state.service';
+import { FabricIdbService } from './service/fabric-idb.service';
 
 interface SelectionCreatedEvent {
   e: MouseEvent;
@@ -119,7 +118,8 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     private readonly zone: NgZone,
     private readonly renderer: Renderer2,
     private readonly fabricStateService: FabricStateService,
-    private readonly fabricActionService: FabricActionService
+    private readonly fabricActionService: FabricActionService,
+    private readonly fabricIdbService: FabricIdbService
   ) {}
 
   ngOnInit(): void {
@@ -130,6 +130,17 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     } as fabric.ICanvasOptions);
 
     this.fabricCanvas$.next(this.fabricCanvas);
+
+    this.fabricIdbService
+      .getActiveDraw()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (v) => {
+          if (v) {
+            this.fabricCanvas.loadFromJSON(JSON.parse(v), console.log);
+          }
+        },
+      });
 
     this.zone.runOutsideAngular(() => {
       whenResize(this.parentElement)
@@ -179,12 +190,14 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       this.objectAddedEvent$,
       this.objectRemovedEvent$
     )
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (e) => {
-          console.log(e);
-        },
-      });
+      .pipe(
+        debounceTime(2000),
+        switchMap(() =>
+          this.fabricIdbService.updateActiveDraw(this.fabricCanvas.toJSON())
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe();
   }
 
   registerMouseDrawShape() {

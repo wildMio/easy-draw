@@ -10,6 +10,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { IDB_VERSION_TOKEN } from './services/idb-version.token';
 
 @NgModule({
   declarations: [AppComponent],
@@ -28,7 +29,7 @@ import { AppComponent } from './app.component';
     MatIconModule,
     LayoutModule,
   ],
-  providers: [],
+  providers: [{ provide: IDB_VERSION_TOKEN, useValue: 1 }],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
