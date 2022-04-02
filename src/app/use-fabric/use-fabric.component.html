@@ -9,55 +9,59 @@
   <app-fabric-toolbox [fabricCanvas]="fabricCanvas"></app-fabric-toolbox>
 </div>
 
-<div class="app-tools-wrapper absolute grid">
-  <button
-    *ngIf="showInstallPromotion$ | async"
-    mat-icon-button
-    matTooltip="Install Easy-Draw"
-    matTooltipPosition="before"
-    [class.narrow-screen-button]="narrowScreen$ | async"
-    (click)="installPromotion()"
-  >
-    <mat-icon [class.narrow-screen-icon]="narrowScreen$ | async">
-      browser_updated
-    </mat-icon>
-  </button>
+<div
+  class="absolute w-full h-full pointer-events-none flex justify-end items-center"
+>
+  <div class="grid gap-1 pointer-events-auto">
+    <button
+      *ngIf="showInstallPromotion$ | async"
+      mat-icon-button
+      matTooltip="Install Easy-Draw"
+      matTooltipPosition="before"
+      [class.narrow-screen-button]="narrowScreen$ | async"
+      (click)="installPromotion()"
+    >
+      <mat-icon [class.narrow-screen-icon]="narrowScreen$ | async">
+        browser_updated
+      </mat-icon>
+    </button>
 
-  <button
-    *ngIf="swUpdateAvailable$ | async"
-    mat-icon-button
-    matTooltip="Reload to get the newest feature."
-    matTooltipPosition="before"
-    [class.narrow-screen-button]="narrowScreen$ | async"
-    (click)="reloadPage()"
-  >
-    <mat-icon [class.narrow-screen-icon]="narrowScreen$ | async">
-      tips_and_updates
-    </mat-icon>
-  </button>
+    <button
+      *ngIf="swUpdateAvailable$ | async"
+      mat-icon-button
+      matTooltip="Reload to get the newest feature."
+      matTooltipPosition="before"
+      [class.narrow-screen-button]="narrowScreen$ | async"
+      (click)="reloadPage()"
+    >
+      <mat-icon [class.narrow-screen-icon]="narrowScreen$ | async">
+        tips_and_updates
+      </mat-icon>
+    </button>
 
-  <a
-    mat-icon-button
-    routerLink="/"
-    matTooltip="Dashboard"
-    matTooltipPosition="before"
-    [class.narrow-screen-button]="narrowScreen$ | async"
-  >
-    <mat-icon [class.narrow-screen-icon]="narrowScreen$ | async">
-      alt_route
-    </mat-icon>
-  </a>
-  <a
-    target="_blank"
-    referrerpolicy="no-referrer"
-    href="https://github.com/wildMio/easy-draw"
-    mat-icon-button
-    matTooltip="Star at GitHub"
-    matTooltipPosition="before"
-    [class.narrow-screen-button]="narrowScreen$ | async"
-  >
-    <mat-icon [class.narrow-screen-icon]="narrowScreen$ | async">
-      star_border
-    </mat-icon>
-  </a>
+    <a
+      mat-icon-button
+      routerLink="/"
+      matTooltip="Dashboard"
+      matTooltipPosition="before"
+      [class.narrow-screen-button]="narrowScreen$ | async"
+    >
+      <mat-icon [class.narrow-screen-icon]="narrowScreen$ | async">
+        alt_route
+      </mat-icon>
+    </a>
+    <a
+      target="_blank"
+      referrerpolicy="no-referrer"
+      href="https://github.com/wildMio/easy-draw"
+      mat-icon-button
+      matTooltip="Star at GitHub"
+      matTooltipPosition="before"
+      [class.narrow-screen-button]="narrowScreen$ | async"
+    >
+      <mat-icon [class.narrow-screen-icon]="narrowScreen$ | async">
+        star_border
+      </mat-icon>
+    </a>
+  </div>
 </div>
