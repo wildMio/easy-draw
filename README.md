@@ -1,6 +1,27 @@
 # EasyDraw
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 12.0.0.
+## Purpose
+
+Quick record thought.
+
+site: <https://easy-draw-a56ec.web.app/>
+
+## Preview
+
+[![Web svg explorer preview](./doc/preview.webp)](./doc/preview.webp)
+
+## Dependency library
+
+- Angular (<https://angular.io/>)
+- rxjs (<https://rxjs.dev/>)
+- typescript (<https://www.typescriptlang.org/>)
+- angular material (<https://material.angular.io/>)
+- tailwindcss (<https://tailwindcss.com/>)
+- fabricjs (<https://github.com/fabricjs/fabric.js>)
+
+### Inspired by
+
+excalidraw (<https://excalidraw.com/>)
 
 ## Development server
 
