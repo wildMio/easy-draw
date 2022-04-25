@@ -93,10 +93,10 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     fabricCanvasEvent('selection:created')
   ) as Observable<SelectionCreatedEvent>;
   selectionUpdated$ = this.fabricCanvas$.pipe(
-    fabricCanvasEvent('mouse:updated')
+    fabricCanvasEvent('selection:updated')
   ) as Observable<SelectionUpdatedEvent>;
   selectionCleared$ = this.fabricCanvas$.pipe(
-    fabricCanvasEvent('mouse:cleared')
+    fabricCanvasEvent('selection:cleared')
   ) as Observable<SelectionClearedEvent>;
 
   pathCreated$ = this.fabricCanvas$.pipe(
@@ -572,16 +572,15 @@ export class HookFabricDirective implements OnInit, OnDestroy {
   }
 
   registerMouseWheel() {
-    // this.mouseWheel$.pipe(takeUntil(this.destroy$)).subscribe({
-    //   next: (fabricEvent) => {
-    //     const e = fabricEvent.e as MouseEvent;
-    //     e.shiftKey;
-    //     const { x, y } = this.fabricCanvas.getVpCenter();
-    //     const point = new fabric.Point(x + 100, y);
-    //     // this.fabricCanvas.add(point);
-    //     this.fabricCanvas.zoomToPoint({ x: x + 400, y } as any, 1);
-    //     this.fabricCanvas.requestRenderAll();
-    //   },
-    // });
+    this.mouseWheel$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (fabricEvent) => {
+        const { shiftKey, deltaY } = fabricEvent.e as WheelEvent;
+        if (deltaY) {
+          const offset = deltaY > 0 ? -50 : 50;
+          const point = shiftKey ? { x: offset, y: 0 } : { x: 0, y: offset };
+          this.fabricCanvas.relativePan(point);
+        }
+      },
+    });
   }
 }

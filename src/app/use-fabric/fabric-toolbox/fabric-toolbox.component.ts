@@ -44,8 +44,8 @@ export class FabricToolboxComponent implements OnDestroy {
 
   showNarrowPalette$ = new BehaviorSubject(false);
 
-  hasSelected$ = this.fabricActionService.selectedObjects$.pipe(
-    map((selected) => !!selected.length)
+  noSelected$ = this.fabricActionService.selectedObjects$.pipe(
+    map((selected) => !selected.length)
   );
 
   notImplemented = true;

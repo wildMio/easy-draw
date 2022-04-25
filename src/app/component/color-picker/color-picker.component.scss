@@ -13,6 +13,10 @@
     opacity: 0.75;
     pointer-events: none;
   }
+
+  &:disabled {
+    pointer-events: none;
+  }
 }
 
 .color-picker-background {

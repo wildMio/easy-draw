@@ -39,6 +39,8 @@ export class ColorPickerComponent {
   private _color: string | null = colors.elementStroke[0];
   colorInput$ = this.color$.pipe(map((color) => color?.replace('#', '')));
 
+  @Input() disabled?: boolean;
+
   @Output() colorSelect = new EventEmitter<string>();
 
   isOpen = false;

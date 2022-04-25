@@ -55,3 +55,8 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
 }
+
+.no-padding-icon-button {
+  padding: 0;
+  min-width: 36px;
+}

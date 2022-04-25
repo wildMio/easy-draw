@@ -1,6 +1,7 @@
 <button
   class="color-picker-button cursor-pointer overflow-hidden"
   type="button"
+  [disabled]="disabled"
   (click)="toggleOverlay()"
   cdkOverlayOrigin
   #trigger="cdkOverlayOrigin"
@@ -20,6 +21,7 @@
     #colorInput
     type="text"
     class="color-input h-full"
+    [disabled]="disabled"
     [value]="colorInput$ | async"
     (input)="changeColor(colorInput.value)"
   />
