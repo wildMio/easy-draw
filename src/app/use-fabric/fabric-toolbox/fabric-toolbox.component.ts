@@ -6,10 +6,9 @@ import {
   OnDestroy,
   Renderer2,
 } from '@angular/core';
-import { MatButtonToggleChange } from '@angular/material/button-toggle';
 
 import { BehaviorSubject, Subject } from 'rxjs';
-import { map, takeUntil } from 'rxjs/operators';
+import { distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
 
 import { FabricActionService } from '../fabric-action.service';
 import { FabricStateService, ModeType } from '../fabric-state.service';
@@ -27,6 +26,11 @@ export class FabricToolboxComponent implements OnDestroy {
   @Input() fabricCanvas!: fabric.Canvas;
 
   mode$ = this.fabricActionService.mode$;
+
+  isMoveMode$ = this.fabricActionService.mode$.pipe(
+    map((mode) => mode === 'move'),
+    distinctUntilChanged()
+  );
 
   hostEl = this.host.nativeElement;
 
@@ -80,8 +84,7 @@ export class FabricToolboxComponent implements OnDestroy {
     this.fabricCanvas.clear();
   }
 
-  changeMode(toggleChange: MatButtonToggleChange) {
-    const value = toggleChange.value as ModeType;
+  changeMode(value: ModeType) {
     this.fabricActionService.changeMode(value);
   }
 

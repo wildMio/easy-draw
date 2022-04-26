@@ -17,14 +17,17 @@ import {
   merge,
   NEVER,
   Observable,
+  of,
   ReplaySubject,
   Subject,
 } from 'rxjs';
 import {
   auditTime,
   debounceTime,
+  distinctUntilChanged,
   finalize,
   map,
+  pairwise,
   startWith,
   switchMap,
   takeUntil,
@@ -105,6 +108,10 @@ export class HookFabricDirective implements OnInit, OnDestroy {
 
   mouseWheel$ = this.fabricCanvas$.pipe(fabricCanvasEvent('mouse:wheel'));
 
+  mouseDown$ = this.fabricCanvas$.pipe(fabricCanvasEvent('mouse:down'));
+  mouseUp$ = this.fabricCanvas$.pipe(fabricCanvasEvent('mouse:up'));
+  mouseMove$ = this.fabricCanvas$.pipe(fabricCanvasEvent('mouse:move'));
+
   destroy$ = new Subject<void>();
 
   @Input() parentElement!: HTMLElement;
@@ -173,7 +180,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
 
       this.registerPathCreated();
 
-      this.registerMouseWheel();
+      this.handleViewpoint();
     });
 
     this.fabricCanvasReady.emit(this.fabricCanvas);
@@ -204,6 +211,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     const notShapeMode: Partial<{ [key in ModeType]: true }> = {
       selection: true,
       freeDraw: true,
+      move: true,
     };
 
     const {
@@ -571,7 +579,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       });
   }
 
-  registerMouseWheel() {
+  handleViewpoint() {
     this.mouseWheel$.pipe(takeUntil(this.destroy$)).subscribe({
       next: (fabricEvent) => {
         const { shiftKey, deltaY } = fabricEvent.e as WheelEvent;
@@ -582,5 +590,34 @@ export class HookFabricDirective implements OnInit, OnDestroy {
         }
       },
     });
+
+    const { mode$ } = this.fabricActionService;
+
+    mode$
+      .pipe(
+        map((mode) => mode === 'move'),
+        distinctUntilChanged(),
+        tap(
+          (isMove) =>
+            (this.fabricCanvas.defaultCursor = isMove ? 'move' : 'default')
+        ),
+        switchMap((isMove) =>
+          isMove
+            ? this.mouseDown$.pipe(
+                switchMap(() =>
+                  this.mouseMove$.pipe(pairwise(), takeUntil(this.mouseUp$))
+                ),
+                map(([prev, curr]) => ({
+                  x: (curr.pointer?.x ?? 0) - (prev.pointer?.x ?? 0),
+                  y: (curr.pointer?.y ?? 0) - (prev.pointer?.y ?? 0),
+                }))
+              )
+            : of(null)
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (point) => point && this.fabricCanvas.relativePan(point),
+      });
   }
 }

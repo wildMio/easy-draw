@@ -146,7 +146,7 @@
     aria-label="Mode"
     class="pointer-events-auto"
     [value]="mode$ | async"
-    (change)="changeMode($event)"
+    (change)="changeMode($event.value)"
   >
     <mat-button-toggle value="selection" matTooltip="Selection">
       <mat-icon>highlight_alt</mat-icon>
@@ -170,5 +170,19 @@
       <mat-icon>text_fields</mat-icon>
     </mat-button-toggle>
   </mat-button-toggle-group>
+  <span class="inline-block mx-1 border border-slate-300 relative rounded-full">
+    <button
+      mat-icon-button
+      aria-label="Move mode"
+      class="pointer-events-auto"
+      (click)="changeMode('move')"
+    >
+      <mat-icon>control_camera</mat-icon>
+    </button>
+    <div
+      class="absolute inset-0 bg-black opacity-0 rounded-full"
+      [class.opacity-10]="isMoveMode$ | async"
+    ></div>
+  </span>
 </div>
 <div class="grid-area-var" style="--grid-area: hint"></div>

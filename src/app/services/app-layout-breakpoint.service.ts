@@ -8,7 +8,7 @@ import { map } from 'rxjs/operators';
 })
 export class AppLayoutBreakpointService {
   narrowScreen$ = this.breakObserver
-    .observe('(max-width: 700px)')
+    .observe('(max-width: 740px)')
     .pipe(map((narrowScreen) => narrowScreen.matches));
 
   wideScreen$ = this.narrowScreen$.pipe(

@@ -7,6 +7,7 @@ import { map, switchMap } from 'rxjs/operators';
 import { FabricActionService } from './fabric-action.service';
 
 export type ModeType =
+  | 'move'
   | 'selection'
   | 'freeDraw'
   | 'square'
