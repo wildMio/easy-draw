@@ -28,6 +28,7 @@ import {
   finalize,
   map,
   pairwise,
+  skip,
   startWith,
   switchMap,
   takeUntil,
@@ -42,6 +43,7 @@ import {
 } from './fabric-action.service';
 import { FabricStateService, ModeType } from './fabric-state.service';
 import { FabricIdbService } from './service/fabric-idb.service';
+import { isRect, isTextbox } from './util/type-asset';
 
 interface SelectionCreatedEvent {
   e: MouseEvent;
@@ -86,6 +88,9 @@ export class HookFabricDirective implements OnInit, OnDestroy {
   );
   objectRemovedEvent$ = this.fabricCanvas$.pipe(
     fabricCanvasEvent('object:removed')
+  );
+  afterRenderEvent$ = this.fabricCanvas$.pipe(
+    fabricCanvasEvent('after:render')
   );
 
   mousedownEvent$ = this.fabricCanvas$.pipe(fabricCanvasEvent('mouse:down'));
@@ -195,7 +200,8 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     merge(
       this.objectModifiedEvent$,
       this.objectAddedEvent$,
-      this.objectRemovedEvent$
+      this.objectRemovedEvent$,
+      this.afterRenderEvent$
     )
       .pipe(
         debounceTime(2000),
@@ -253,9 +259,9 @@ export class HookFabricDirective implements OnInit, OnDestroy {
             if (mode === 'text') {
               let currentTextBox: fabric.Textbox | undefined;
               return this.mousedownEvent$.pipe(
-                tap(({ pointer }) => {
+                tap(({ absolutePointer }) => {
                   currentTextBox = this.handleTextMode(
-                    pointer,
+                    absolutePointer,
                     currentTextBox,
                     opacity,
                     brushColor,
@@ -272,12 +278,12 @@ export class HookFabricDirective implements OnInit, OnDestroy {
             }
 
             return this.mousedownEvent$.pipe(
-              switchMap(({ pointer }) => {
-                if (!pointer) {
+              switchMap(({ absolutePointer }) => {
+                if (!absolutePointer) {
                   return NEVER;
                 }
                 const mousemoveHandler = this.generateMousemoveEventHandler(
-                  pointer,
+                  absolutePointer,
                   mode,
                   strokeWidth,
                   brushColor,
@@ -307,7 +313,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
   }
 
   generateMousemoveEventHandler(
-    pointer: fabric.Point,
+    absolutePointer: fabric.Point,
     mode: ModeType,
     strokeWidth: number,
     stroke: string,
@@ -317,7 +323,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     fill: string | undefined
   ): (e: fabric.IEvent) => void {
     const { Rect, Ellipse, Line, Polygon } = fabric;
-    const { x: originalX, y: originalY } = pointer;
+    const { x: originalX, y: originalY } = absolutePointer;
 
     let isFirst = true;
 
@@ -357,12 +363,12 @@ export class HookFabricDirective implements OnInit, OnDestroy {
           rx: edge === 'round' ? 8 : 0,
           ry: edge === 'round' ? 8 : 0,
         });
-        return ({ pointer }) => {
-          if (!pointer) {
+        return ({ absolutePointer }) => {
+          if (!absolutePointer) {
             return;
           }
 
-          const { x, y } = pointer;
+          const { x, y } = absolutePointer;
           const top = Math.min(originalY, y);
           const left = Math.min(originalX, x);
           const width = Math.abs(originalX - x);
@@ -382,12 +388,12 @@ export class HookFabricDirective implements OnInit, OnDestroy {
           strokeWidth,
           strokeUniform: true,
         });
-        return ({ pointer }) => {
-          if (!pointer) {
+        return ({ absolutePointer }) => {
+          if (!absolutePointer) {
             return;
           }
 
-          const { x, y } = pointer;
+          const { x, y } = absolutePointer;
           const top = Math.min(originalY, y);
           const left = Math.min(originalX, x);
           const rx = Math.abs(originalX - x) / 2;
@@ -407,12 +413,12 @@ export class HookFabricDirective implements OnInit, OnDestroy {
           strokeWidth,
           strokeUniform: true,
         });
-        return ({ pointer }) => {
-          if (!pointer) {
+        return ({ absolutePointer }) => {
+          if (!absolutePointer) {
             return;
           }
 
-          const { x, y } = pointer;
+          const { x, y } = absolutePointer;
 
           const changePosition = originalX > x;
           const [x1, x2] = changePosition ? [x, originalX] : [originalX, x];
@@ -441,12 +447,12 @@ export class HookFabricDirective implements OnInit, OnDestroy {
           }
         );
 
-        return ({ pointer }) => {
-          if (!pointer) {
+        return ({ absolutePointer }) => {
+          if (!absolutePointer) {
             return;
           }
 
-          const { x, y } = pointer;
+          const { x, y } = absolutePointer;
           const top = Math.min(originalY, y);
           const left = Math.min(originalX, x);
           const width = Math.abs(originalX - x);
@@ -479,13 +485,13 @@ export class HookFabricDirective implements OnInit, OnDestroy {
   }
 
   handleTextMode(
-    pointer: fabric.Point | undefined,
+    absolutePointer: fabric.Point | undefined,
     currentTextBox: fabric.Textbox | undefined,
     opacity: number,
     fill: string | undefined,
     textBackgroundColor: string | undefined
   ): fabric.Textbox | undefined {
-    if (!pointer) {
+    if (!absolutePointer) {
       return;
     }
 
@@ -505,7 +511,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     } as fabric.ITextOptions;
 
     const { Textbox } = fabric;
-    const { x: left, y: top } = pointer;
+    const { x: left, y: top } = absolutePointer;
     currentTextBox = new Textbox('', {
       ...baseConfig,
       left,
@@ -555,13 +561,96 @@ export class HookFabricDirective implements OnInit, OnDestroy {
       map(() => ({ selected: [] as fabric.Object[] }))
     );
 
+    const {
+      lineWidth$,
+      brushColor$,
+      opacity$,
+      strokeStyle$,
+      edge$,
+      fillColor$,
+    } = this.fabricActionService;
+
+    const updateProp$ =
+      <T>(obs: Observable<T>, prop: keyof fabric.Object) =>
+      (selected: fabric.Object[]) =>
+        obs.pipe(
+          skip(1),
+          tap((value) =>
+            selected.forEach((obj) => {
+              obj.set(prop, value);
+            })
+          )
+        );
+    const strokeWidthUpdate$ = updateProp$(lineWidth$, 'strokeWidth');
+    const strokeUpdate$ = updateProp$(brushColor$, 'stroke');
+    const opacityUpdate$ = updateProp$(opacity$, 'opacity');
+    const strokeStyleUpdate$ = (selected: fabric.Object[]) =>
+      strokeStyle$.pipe(
+        skip(1),
+        tap((strokeStyle) => {
+          selected.forEach((obj) => {
+            const { strokeWidth = 0 } = obj;
+            const strokeDashArray =
+              strokeStyle === 'thin-dash'
+                ? [strokeWidth * 4, strokeWidth * 3]
+                : strokeStyle === 'square-dash'
+                ? [strokeWidth, strokeWidth * 2.5]
+                : [];
+
+            obj.set('strokeDashArray', strokeDashArray);
+          });
+        })
+      );
+    const edgeUpdate$ = (selected: fabric.Object[]) =>
+      edge$.pipe(
+        skip(1),
+        tap((edge) => {
+          const rx = edge === 'round' ? 8 : 0;
+          const ry = edge === 'round' ? 8 : 0;
+          const strokeLineCap = edge === 'round' ? 'round' : 'square';
+          const strokeLineJoin = edge === 'round' ? edge : undefined;
+          selected.forEach((obj) => {
+            if (isRect(obj)) {
+              obj.set('rx', rx);
+              obj.set('ry', ry);
+            }
+            obj.set('strokeLineCap', strokeLineCap);
+            obj.set('strokeLineJoin', strokeLineJoin);
+          });
+        })
+      );
+    const fillColorUpdate$ = (selected: fabric.Object[]) =>
+      fillColor$.pipe(
+        skip(1),
+        tap((fillColor) => {
+          selected.forEach((obj) => {
+            if (isTextbox(obj)) {
+              (obj as fabric.Textbox).set('textBackgroundColor', fillColor);
+            } else {
+              obj.set('fill', fillColor);
+            }
+          });
+        })
+      );
+
     merge(created$, updated$, cleared$)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: ({ selected }) => {
+      .pipe(
+        tap(({ selected }) => {
           this.fabricActionService.updateSelectedObjects(selected);
-        },
-      });
+        }),
+        switchMap(({ selected }) => {
+          return merge(
+            strokeWidthUpdate$(selected),
+            strokeUpdate$(selected),
+            opacityUpdate$(selected),
+            strokeStyleUpdate$(selected),
+            edgeUpdate$(selected),
+            fillColorUpdate$(selected)
+          );
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({ next: () => this.fabricCanvas.requestRenderAll() });
   }
 
   registerPathCreated() {
