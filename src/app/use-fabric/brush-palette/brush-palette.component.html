@@ -38,6 +38,7 @@
       type="text"
       class="line-width-input h-full"
       [value]="lineWidth$ | async"
+      [placeholder]="lineWidthPlaceholder$ | async"
       (input)="inputLineWidth(lineWidthInput.value)"
     />
   </label>
@@ -70,6 +71,7 @@
       max="100"
       class="line-width-input opacity-input h-full"
       [value]="displayOpacity$ | async"
+      [placeholder]="opacityPlaceholder$ | async"
       (input)="inputOpacity(opacityInput.value)"
     />
   </label>

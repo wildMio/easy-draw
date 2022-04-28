@@ -37,7 +37,7 @@ export class ColorPickerComponent {
     this.color$.next(value);
   }
   private _color: string | null = colors.elementStroke[0];
-  colorInput$ = this.color$.pipe(map((color) => color?.replace('#', '')));
+  colorInput$ = this.color$.pipe(map((color) => color?.replace('#', '') ?? ''));
 
   @Input() disabled?: boolean;
 

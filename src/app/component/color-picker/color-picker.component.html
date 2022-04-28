@@ -1,5 +1,5 @@
 <button
-  class="color-picker-button cursor-pointer overflow-hidden"
+  class="color-picker-button cursor-pointer overflow-hidden relative"
   type="button"
   [disabled]="disabled"
   (click)="toggleOverlay()"
@@ -11,6 +11,12 @@
     matRipple
     [style.background-color]="color"
   ></div>
+  <div
+    class="color-picker-background absolute inset-0 bg-white flex-center text-slate-400 opacity-0"
+    [class.opacity-100]="!color"
+  >
+    <mat-icon>question_mark</mat-icon>
+  </div>
 </button>
 
 <label class="input-wrapper flex items-center">

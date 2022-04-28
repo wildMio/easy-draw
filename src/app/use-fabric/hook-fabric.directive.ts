@@ -539,7 +539,8 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     };
 
     const created$ = this.selectionCreated$.pipe(
-      tap(({ selected }) => {
+      map(() => this.fabricCanvas.getActiveObjects()),
+      tap((selected) => {
         const padding = Math.max(
           ...selected.map(({ strokeWidth }) => strokeWidth ?? 0)
         );
@@ -548,11 +549,11 @@ export class HookFabricDirective implements OnInit, OnDestroy {
     );
 
     const updated$ = this.selectionUpdated$.pipe(
-      tap(({ selected }) => {
+      map(() => this.fabricCanvas.getActiveObjects()),
+      tap((selected) => {
         const padding = Math.max(
           ...selected.map(({ strokeWidth }) => strokeWidth ?? 0)
         );
-
         selected.forEach((obj) => adjustSelectionStyle(obj, padding));
       })
     );
@@ -608,7 +609,7 @@ export class HookFabricDirective implements OnInit, OnDestroy {
           const rx = edge === 'round' ? 8 : 0;
           const ry = edge === 'round' ? 8 : 0;
           const strokeLineCap = edge === 'round' ? 'round' : 'square';
-          const strokeLineJoin = edge === 'round' ? edge : undefined;
+          const strokeLineJoin = edge === 'round' ? 'round' : undefined;
           selected.forEach((obj) => {
             if (isRect(obj)) {
               obj.set('rx', rx);
@@ -635,10 +636,11 @@ export class HookFabricDirective implements OnInit, OnDestroy {
 
     merge(created$, updated$, cleared$)
       .pipe(
-        tap(({ selected }) => {
+        map(() => this.fabricCanvas.getActiveObjects()),
+        tap((selected) => {
           this.fabricActionService.updateSelectedObjects(selected);
         }),
-        switchMap(({ selected }) => {
+        switchMap((selected) => {
           return merge(
             strokeWidthUpdate$(selected),
             strokeUpdate$(selected),
@@ -650,7 +652,14 @@ export class HookFabricDirective implements OnInit, OnDestroy {
         }),
         takeUntil(this.destroy$)
       )
-      .subscribe({ next: () => this.fabricCanvas.requestRenderAll() });
+      .subscribe({
+        next: () => {
+          this.fabricCanvas.requestRenderAll();
+          this.fabricActionService.updateSelectedObjects(
+            this.fabricCanvas.getActiveObjects()
+          );
+        },
+      });
   }
 
   registerPathCreated() {
